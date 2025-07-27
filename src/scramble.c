@@ -14,6 +14,19 @@
 
 
 /**
+ * The modifiers which can be applied to a move
+ */
+typedef enum
+{
+	DOUBLE_MODIFIER = '2', /* apply the move twice */
+	REVERSE_MODIFIER = '\'', /* apply the move backwards */
+	NO_MODIFIER = '\0' /* end of the string, no modifier here */
+} MoveModifier;
+
+
+
+
+/**
  * All the valid moves we'll use to generate a scramble
  * Not all of them have the same odds to be picked
  */
@@ -66,13 +79,13 @@ static int moves_cancel_each_other(char const * first, char const * second)
 	if (first[0] != second[0])
 		return 0;
 
-	if (first[1] == '2' && second[1] == '2')
+	if (first[1] == DOUBLE_MODIFIER && second[1] == DOUBLE_MODIFIER)
 		return 1;
 
-	if (first[1] == '\0' && second[1] == '\'')
+	if (first[1] == NO_MODIFIER && second[1] == REVERSE_MODIFIER)
 		return 1;
 
-	if (first[1] == '\'' && second[1] == '\0')
+	if (first[1] == REVERSE_MODIFIER && second[1] == NO_MODIFIER)
 		return 1;
 
 	return 0;
@@ -145,7 +158,7 @@ static int moves_cannot_be_combined(char const * first, char const * second)
  *
  * @return int - always returns 0
  */
-static int apply_move_modifier(char * move, char modifier)
+static int apply_move_modifier(char * move, MoveModifier modifier)
 {
 	move[1] = modifier;
 	move[2] = '\0';
@@ -163,7 +176,7 @@ static int apply_move_modifier(char * move, char modifier)
  */
 static int apply_double_move_modifier(char * move)
 {
-	return apply_move_modifier(move, '2');
+	return apply_move_modifier(move, DOUBLE_MODIFIER);
 }
 
 
@@ -176,7 +189,7 @@ static int apply_double_move_modifier(char * move)
  */
 static int apply_reverse_move_modifier(char * move)
 {
-	return apply_move_modifier(move, '\'');
+	return apply_move_modifier(move, REVERSE_MODIFIER);
 }
 
 
@@ -189,7 +202,7 @@ static int apply_reverse_move_modifier(char * move)
  */
 static int strip_move_modifier(char * move)
 {
-	move[1] = '\0';
+	move[1] = NO_MODIFIER;
 
 	return 0;
 }
@@ -206,10 +219,10 @@ static int strip_move_modifier(char * move)
  */
 static int makes_double_move(char const * first, char const * second)
 {
-	if (first[1] == '\0' && second[1] == '\0')
+	if (first[1] == NO_MODIFIER && second[1] == NO_MODIFIER)
 		return 1;
 
-	if (first[1] == '\'' && second[1] == '\'')
+	if (first[1] == REVERSE_MODIFIER && second[1] == REVERSE_MODIFIER)
 		return 1;
 
 	return 0;
@@ -227,10 +240,10 @@ static int makes_double_move(char const * first, char const * second)
  */
 static int makes_reverse_move(char const * first, char const * second)
 {
-	if (first[1] == '2' && second[1] == '\0')
+	if (first[1] == DOUBLE_MODIFIER && second[1] == NO_MODIFIER)
 		return 1;
 
-	if (first[1] == '\0' && second[1] == '2')
+	if (first[1] == NO_MODIFIER && second[1] == DOUBLE_MODIFIER)
 		return 1;
 
 	return 0;
@@ -250,10 +263,10 @@ static int makes_reverse_move(char const * first, char const * second)
  */
 static int modifiers_cancel_each_other(char const * first, char const * second)
 {
-	if (first[1] == '\'' && second[1] == '2')
+	if (first[1] == REVERSE_MODIFIER && second[1] == DOUBLE_MODIFIER)
 		return 1;
 
-	if (first[1] == '2' && second[1] == '\'')
+	if (first[1] == DOUBLE_MODIFIER && second[1] == REVERSE_MODIFIER)
 		return 1;
 
 	return 0;
