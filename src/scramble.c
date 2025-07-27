@@ -73,6 +73,21 @@ static int add_move(char ** moves, char const * move, int index)
 
 
 /**
+ * Checks if both moves can be turned into a single one
+ *
+ * @param first - the first move to check
+ *
+ * @param second - the second move to check
+ *
+ * @return int - 1 if moves can be combined, 0 otherwise
+ */
+static int moves_can_be_combined(char const * first, char const * second)
+{
+	return first[0] == second[0];
+}
+
+
+/**
  * Applies a modifier on the move (eg. <'> or <2>), removing any previous one
  *
  * @param move - the move to apply the modifier to
@@ -91,6 +106,32 @@ static int apply_move_modifier(char * move, char modifier)
 
 
 /**
+ * Applies the double move modifier (eg., <F> -> <F2>)
+ *
+ * @param move - the move to apply the modifier on
+ *
+ * @return int - always returns 0
+ */
+static int apply_double_move_modifier(char * move)
+{
+	return apply_move_modifier(move, '2');
+}
+
+
+/**
+ * Applies the reverse move modifier (eg., <R> -> <R'>)
+ *
+ * @param move - the move to apply the modifier on
+ *
+ * @return int - always returns 0
+ */
+static int apply_reverse_move_modifier(char * move)
+{
+	return apply_move_modifier(move, '\'');
+}
+
+
+/**
  * Removes the modifier on the move (eg. <'> or <2>)
  *
  * @param move - the move to remove the modifier from
@@ -100,6 +141,71 @@ static int apply_move_modifier(char * move, char modifier)
 static int strip_move_modifier(char * move)
 {
 	move[1] = '\0';
+
+	return 0;
+}
+
+
+/**
+ * Checks if both moves can be combined into a double one
+ *
+ * @param first - the first move to check the modifier
+ *
+ * @param second - the second move to check the modifier from
+ *
+ * @return int - 1 if moves can be combined into a double one, 0 otherwise
+ */
+static int makes_double_move(char const * first, char const * second)
+{
+	if (first[1] == '\0' && second[1] == '\0')
+		return 1;
+
+	if (first[1] == '\'' && second[1] == '\'')
+		return 1;
+
+	return 0;
+}
+
+
+/**
+ * Checks if both moves can be combined to a reverse one (they sum up to 270°)
+ *
+ * @param first - the first move to check the modifier
+ *
+ * @param second - the second move to check the modifier from
+ *
+ * @return int - 1 if moves can be combined into a reverse one, 0 otherwise
+ */
+static int makes_reverse_move(char const * first, char const * second)
+{
+	if (first[1] == '2' && second[1] == '\0')
+		return 1;
+
+	if (first[1] == '\0' && second[1] == '2')
+		return 1;
+
+	return 0;
+}
+
+
+/**
+ * Checks if the modifiers of both moves are opposite
+ * A double move followed by the same reverse move turns the first move into
+ * a simple one
+ *
+ * @param first - the first move to check the modifier from
+ *
+ * @param second - the second move to check the modifier from
+ *
+ * @return int - 1 if modifiers cancel each other, 0 otherwise
+ */
+static int modifiers_cancel_each_other(char const * first, char const * second)
+{
+	if (first[1] == '\'' && second[1] == '2')
+		return 1;
+
+	if (first[1] == '2' && second[1] == '\'')
+		return 1;
 
 	return 0;
 }
@@ -128,29 +234,23 @@ static int add_random_move(char ** moves, size_t moves_count)
 	{
 		new_move = pick_random_move();
 
-		/* can't combine new move with previous, just append */
-		if (previous_move[0] != new_move[0])
+		if (! moves_can_be_combined(previous_move, new_move))
 			return add_move(moves, new_move, moves_count);
 
-		/* both moves are the same and without modifiers, make it a double */
-		if (previous_move[1] == '\0' && new_move[1] == '\0')
-			return apply_move_modifier(previous_move, '2');
+		if (makes_double_move(previous_move, new_move))
+			return apply_double_move_modifier(previous_move);
 
-		/* reverse turns a double into simple a move (eg., <L'> <L2> = <L> */
-		if (previous_move[1] == '\'' && new_move[1] == '2')
-			return strip_move_modifier(previous_move);
-		if (previous_move[1] == '2' && new_move[1] == '\'')
+		if (modifiers_cancel_each_other(previous_move, new_move))
 			return strip_move_modifier(previous_move);
 
-		/* double reverse is the same as double (eg., <D'> <D'> = <D2>) */
-		if (previous_move[1] == '\'' && new_move[1] == '\'')
-			return apply_move_modifier(previous_move, '2');
+		if (makes_reverse_move(previous_move, new_move))
+			return apply_reverse_move_modifier(previous_move);
 
-		/* sums up to 270°, it's a reverse move (eg., <F2> <F>) */
-		if (previous_move[1] == '2' && new_move[1] == '\0')
-			return apply_move_modifier(previous_move, '\'');
-
-		/* at that point, new move is incompatible, just regen a new one */
+		/*
+		 * at that point, new move is incompatible because it cancels the
+		 * previous one, eg. [L2 L2] [R' R] [F F']
+		 * we'll just regen a new one
+		 */
 	}
 
 	return 0;
