@@ -72,6 +72,39 @@ static int add_move(char ** moves, char const * move, int index)
 
 
 /**
+ * Applies a modifier on the move (eg. <'> or <2>), removing any previous one
+ *
+ * @param move - the move to apply the modifier to
+ *
+ * @param symbol - the modifier to apply
+ *
+ * @return int - always returns 0
+ */
+static int apply_move_modifier(char * move, char modifier)
+{
+	move[1] = modifier;
+	move[2] = '\0';
+
+	return 0;
+}
+
+
+/**
+ * Removes the modifier on the move (eg. <'> or <2>)
+ *
+ * @param move - the move to remove the modifier from
+ *
+ * @return int - always returns 0
+ */
+static int strip_move_modifier(char * move)
+{
+	move[1] = '\0';
+
+	return 0;
+}
+
+
+/**
  * Adds a new random move in the array, or combines it with the last one
  * 	if possible
  *
@@ -85,13 +118,13 @@ static int add_move(char ** moves, char const * move, int index)
 static int add_random_move(char ** moves, size_t moves_count)
 {
 	char const * new_move;
-	char * previous_move;
+	char * previous_move = moves[moves_count - 1];
 
 	if (moves_count == 0)
 		return add_move(moves, pick_random_move(), 0);
 
-	do {
-		previous_move = moves[moves_count - 1];
+	while (1)
+	{
 		new_move = pick_random_move();
 
 		/* can't combine new move with previous, just append */
@@ -100,56 +133,20 @@ static int add_random_move(char ** moves, size_t moves_count)
 
 		/* from now on, we know we'll have to combine or regen */
 
-		if (previous_move[1] == '\0')
-		{
-			if (new_move[1] == '\0')
-			{
-				/* same move: append a [2] to previous */
-				previous_move[1] = '2';
-				previous_move[2] = '\0';
-				return 0;
-			}
-			else if (new_move[1] == '2')
-			{
-				/* 270° degrees, append a ['] to previous */
-				previous_move[1] = '\'';
-				previous_move[2] = '\0';
-				return 0;
-			}
-		}
-		else if (previous_move[1] == '\'')
-		{
-			if (new_move[1] == '\'')
-			{
-				/* same move: append a [2] to previous */
-				previous_move[1] = '2';
-				previous_move[2] = '\0';
-				return 0;
-			}
-			else if (new_move[1] == '2')
-			{
-				/* remove ['] : eg., B' and B2 -> subtract, new = B */
-				previous_move[1] = '\0';
-				return 0;
-			}
-		}
-		else if (previous_move[1] == '2')
-		{
-			if (new_move[1] == '\0')
-			{
-				/* 270°, replace [2] in previous by ['] */
-				previous_move[1] = '\'';
-				previous_move[2] = '\0';
-				return 0;
-			}
-			else if (new_move[1] == '\'')
-			{
-				/* remove [2] from previous */
-				previous_move[1] = '\0';
-				return 0;
-			}
-		}
-	} while (1);
+		if (previous_move[1] == '\'' && new_move[1] == '2') /* eg. <L'> <L2> */
+			return strip_move_modifier(previous_move);
+		if (previous_move[1] == '2' && new_move[1] == '\'') /* eg. <R2> <R> */
+			return strip_move_modifier(previous_move);
+
+		if (previous_move[1] == '\0' && new_move[1] == '\0') /* eg. <U> <U> */
+			return apply_move_modifier(previous_move, '2');
+		if (previous_move[1] == '\'' && new_move[1] == '\'') /* eg. <D'> <D'> */
+			return apply_move_modifier(previous_move, '2');
+		if (previous_move[1] == '2' && new_move[1] == '\0') /* eg. <F2> <F> */
+			return apply_move_modifier(previous_move, '\'');
+
+		/* incompatible new move, just regen a new one*/
+	}
 
 	return 0;
 }
