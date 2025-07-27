@@ -252,7 +252,7 @@ static int makes_reverse_move(char const * first, char const * second)
 
 /**
  * Checks if the modifiers of both moves are opposite
- * A double move followed by the same reverse move turns the first move into
+ * A double move followed and the same reverse move turns the double move into
  * a simple one
  *
  * @param first - the first move to check the modifier from
