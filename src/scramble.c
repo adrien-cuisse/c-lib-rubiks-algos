@@ -73,7 +73,37 @@ static int add_move(char ** moves, char const * move, int index)
 
 
 /**
- * Checks if both moves can NOT be combined into a single one
+ * Checks if apply both moves is like doing nothing at all, eg. :
+ * 	- 360° turn: <F2> <F2>
+ *  - 0° turn: <L> <L'> or <U'> <U>
+ *
+ * @param first - the first move to check
+ *
+ * @param second - the second move to check
+ *
+ * @return int - 1 if both move cancels, 0 otherwise
+ */
+static int moves_cancel_each_other(char const * first, char const * second)
+{
+	if (first[0] != second[0])
+		return 0;
+
+	if (first[1] == '2' && second[1] == '2')
+		return 1;
+
+	if (first[1] == '\0' && second[1] == '\'')
+		return 1;
+
+	if (first[1] == '\'' && second[1] == '\0')
+		return 1;
+
+	return 0;
+}
+
+
+/**
+ * Checks if both moves can NOT be combined into a single one, ie. they don't
+ * 	rotate the same slice
  *
  * @param first - the first move to check
  *
@@ -230,28 +260,22 @@ static int add_random_move(char ** moves, size_t moves_count)
 	if (moves_count == 0)
 		return add_move(moves, pick_random_move(), 0);
 
-	while (1)
-	{
-		new_move = pick_random_move();
+	do new_move = pick_random_move();
+	while (moves_cancel_each_other(previous_move, new_move));
 
-		if (moves_cannot_be_combined(previous_move, new_move))
-			return add_move(moves, new_move, moves_count);
+	if (moves_cannot_be_combined(previous_move, new_move))
+		return add_move(moves, new_move, moves_count);
 
-		if (makes_double_move(previous_move, new_move))
-			return apply_double_move_modifier(previous_move);
+	if (makes_double_move(previous_move, new_move))
+		return apply_double_move_modifier(previous_move);
 
-		if (modifiers_cancel_each_other(previous_move, new_move))
-			return strip_move_modifier(previous_move);
+	if (modifiers_cancel_each_other(previous_move, new_move))
+		return strip_move_modifier(previous_move);
 
-		if (makes_reverse_move(previous_move, new_move))
-			return apply_reverse_move_modifier(previous_move);
+	if (makes_reverse_move(previous_move, new_move))
+		return apply_reverse_move_modifier(previous_move);
 
-		/*
-		 * at that point, new move is incompatible because it cancels the
-		 * previous one, eg. [L2 L2] [R' R] [F F']
-		 * we'll just regen a new one
-		 */
-	}
+	/* can't be reached, if we handled cases properly */
 
 	return 0;
 }
