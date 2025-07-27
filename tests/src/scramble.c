@@ -15,7 +15,7 @@
  * Some tests need a very long sequence to check some specs, it mitigates the
  * 	random nature of the generation
  */
-#define BIG_SIZE 128
+#define BIG_SIZE 8192
 
 
 /**
