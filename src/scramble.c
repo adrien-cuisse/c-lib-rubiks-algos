@@ -369,38 +369,52 @@ static char * allocate_scramble(char ** moves, size_t moves_count)
 
 
 /**
- * Concatenates all moves in the array, making a space-delimited scramble
+ * Writes a [move] in the [scrumble], where the [scramble] is pointing to
+ *
+ * @param scramble - the scramble to write the move to
+ *
+ * @param move - the move to write in the scramble
+ *
+ * @return size_t - the number of written bytes
+ */
+static size_t write_move(char * scramble, char const * move)
+{
+	size_t move_length = strlen(move);
+	memcpy(scramble, move, move_length);
+
+	return move_length;
+}
+
+
+/**
+ * Concatenates all [moves] in the array, making a space-delimited scramble
  * 	sequence
  *
- * @param moves - the array of moves to join
+ * @param moves - the array of moves to concatenate
  *
  * @param moves_count - how many moves are in the array
  *
  * @return char * - the concatenated moves
  */
-static char * join_moves(char ** moves, size_t moves_count)
+static char * concat_moves(char ** moves, size_t moves_count)
 {
-	size_t scramble_index = 0;
-	size_t move_index = 0;
-	size_t move_length;
+	size_t move_index;
+	char * scramble_position;
 
 	char * scramble = allocate_scramble(moves, moves_count);
 	if (scramble == NULL)
 		return NULL;
 
-	move_length = strlen(moves[0]);
-	memcpy(scramble, moves[0], move_length);
-	scramble_index = move_length;
+	scramble_position = scramble;
+	scramble_position += write_move(scramble_position, moves[0]);
 
 	for (move_index = 1; move_index < moves_count; move_index++)
 	{
-		scramble[scramble_index] = ' ';
-		move_length = strlen(moves[move_index]);
-		memcpy(scramble + scramble_index + 1, moves[move_index], move_length);
-		scramble_index += move_length + 1;
+		* scramble_position++ = ' ';
+		scramble_position += write_move(scramble_position, moves[move_index]);
 	}
 
-	scramble[scramble_index] = '\0';
+	* scramble_position = '\0';
 
 	return scramble;
 }
@@ -473,7 +487,7 @@ char * rubiks_generate_scramble(size_t size)
 	if (moves == NULL)
 		return NULL;
 
-	scramble = join_moves(moves, size);
+	scramble = concat_moves(moves, size);
 	delete_moves(& moves, size);
 
 	return scramble;
