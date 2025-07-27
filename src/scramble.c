@@ -132,21 +132,25 @@ static int add_random_move(char ** moves, size_t moves_count)
 		if (previous_move[0] != new_move[0])
 			return add_move(moves, new_move, moves_count);
 
-		/* from now on, we know we'll have to combine or regen */
-
-		if (previous_move[1] == '\'' && new_move[1] == '2') /* eg. <L'> <L2> */
-			return strip_move_modifier(previous_move);
-		if (previous_move[1] == '2' && new_move[1] == '\'') /* eg. <R2> <R> */
-			return strip_move_modifier(previous_move);
-
-		if (previous_move[1] == '\0' && new_move[1] == '\0') /* eg. <U> <U> */
+		/* both moves are the same and without modifiers, make it a double */
+		if (previous_move[1] == '\0' && new_move[1] == '\0')
 			return apply_move_modifier(previous_move, '2');
-		if (previous_move[1] == '\'' && new_move[1] == '\'') /* eg. <D'> <D'> */
+
+		/* reverse turns a double into simple a move (eg., <L'> <L2> = <L> */
+		if (previous_move[1] == '\'' && new_move[1] == '2')
+			return strip_move_modifier(previous_move);
+		if (previous_move[1] == '2' && new_move[1] == '\'')
+			return strip_move_modifier(previous_move);
+
+		/* double reverse is the same as double (eg., <D'> <D'> = <D2>) */
+		if (previous_move[1] == '\'' && new_move[1] == '\'')
 			return apply_move_modifier(previous_move, '2');
-		if (previous_move[1] == '2' && new_move[1] == '\0') /* eg. <F2> <F> */
+
+		/* sums up to 270°, it's a reverse move (eg., <F2> <F>) */
+		if (previous_move[1] == '2' && new_move[1] == '\0')
 			return apply_move_modifier(previous_move, '\'');
 
-		/* incompatible new move, just regen a new one*/
+		/* at that point, new move is incompatible, just regen a new one */
 	}
 
 	return 0;
