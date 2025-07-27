@@ -17,7 +17,7 @@
  * All the valid moves we'll use to generate a scramble
  * Not all of them have the same odds to be picked
  */
-static char const * moves[] =
+static char const * valid_moves[] =
 {
     /* base moves should twice the normal rate */
     "L",  "R",  "U",  "D",  "F",  "B",
@@ -33,7 +33,7 @@ static char const * moves[] =
     "L2", "R2", "U2", "D2", "F2", "B2",
     "M2",  "E2",  "S2",
 };
-static int moves_count = sizeof(moves) / sizeof(* moves);
+static int valid_moves_count = sizeof(valid_moves) / sizeof(* valid_moves);
 
 
 
@@ -44,9 +44,9 @@ static int moves_count = sizeof(moves) / sizeof(* moves);
  */
 static char const * pick_random_move()
 {
-	int index = rand() % moves_count;
+	int index = rand() % valid_moves_count;
 
-	return moves[index];
+	return valid_moves[index];
 }
 
 
