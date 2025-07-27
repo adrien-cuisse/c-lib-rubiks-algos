@@ -45,6 +45,7 @@ static int moves_count = sizeof(moves) / sizeof(* moves);
 static char const * pick_random_move()
 {
 	int index = rand() % moves_count;
+
 	return moves[index];
 }
 
