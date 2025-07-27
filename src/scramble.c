@@ -51,28 +51,6 @@ static char const * pick_random_move()
 
 
 /**
- * Stores a copy of [moves] in [moves]
- *
- * @param moves - the array of string to write the [move] in
- *
- * @param move -  the move to write in the array, if it's
- * 	simple (eg. <F> or <R>), it's guaranteed to be long enough to be
- * 	extended at a later point (eg. into <F'> or <R2>)
- *
- * @param index - the index where to write in the array
- *
- * @return int - always returns 1
- */
-static int add_move(char ** moves, char const * move, int index)
-{
-	moves[index] = malloc(MOVE_MAX_LENGTH + 1);
-	strcpy(moves[index], move);
-
-	return 1;
-}
-
-
-/**
  * Checks if apply both moves is like doing nothing at all, eg. :
  * 	- 360° turn: <F2> <F2>
  *  - 0° turn: <L> <L'> or <U'> <U>
@@ -98,6 +76,47 @@ static int moves_cancel_each_other(char const * first, char const * second)
 		return 1;
 
 	return 0;
+}
+
+
+/**
+ * Picks a random move which is guaranteed to be compatible with the
+ * previous one either by combining them, or as a completely new move
+ *
+ * @param previous_move - the move to pick a new one compatible with
+ *
+ * @return char * - the picked new move
+ */
+static char const * pick_compatible_random_move(char const * previous_move)
+{
+	char const * new_move;
+
+	do new_move = pick_random_move();
+	while (moves_cancel_each_other(previous_move, new_move));
+
+	return new_move;
+}
+
+
+/**
+ * Stores a copy of [moves] in [moves]
+ *
+ * @param moves - the array of string to write the [move] in
+ *
+ * @param move -  the move to write in the array, if it's
+ * 	simple (eg. <F> or <R>), it's guaranteed to be long enough to be
+ * 	extended at a later point (eg. into <F'> or <R2>)
+ *
+ * @param index - the index where to write in the array
+ *
+ * @return int - always returns 1
+ */
+static int add_move(char ** moves, char const * move, int index)
+{
+	moves[index] = malloc(MOVE_MAX_LENGTH + 1);
+	strcpy(moves[index], move);
+
+	return 1;
 }
 
 
@@ -254,14 +273,14 @@ static int modifiers_cancel_each_other(char const * first, char const * second)
  */
 static int add_random_move(char ** moves, size_t moves_count)
 {
+	char * previous_move;
 	char const * new_move;
-	char * previous_move = moves[moves_count - 1];
 
 	if (moves_count == 0)
 		return add_move(moves, pick_random_move(), 0);
 
-	do new_move = pick_random_move();
-	while (moves_cancel_each_other(previous_move, new_move));
+	previous_move = moves[moves_count - 1];
+	new_move = pick_compatible_random_move(previous_move);
 
 	if (moves_cannot_be_combined(previous_move, new_move))
 		return add_move(moves, new_move, moves_count);
