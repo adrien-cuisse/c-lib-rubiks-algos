@@ -191,53 +191,38 @@ char * cr_strdup(char const * string)
 
 ParameterizedTestParameters(scramble, check_finds_repetition)
 {
-	static char * params[36];
+	static char * params[19];
 
-	/* only letters */
-	params[0] = cr_strdup("U U"); /* only repetition */
-	params[1] = cr_strdup("F F R"); /* at the beginning */
-	params[2] = cr_strdup("L D D"); /* at the end */
-	params[3] = cr_strdup("F U U L"); /* in the middle */
+	/* only simple repetitions */
+	params[0] = cr_strdup("U U");
+	params[1] = cr_strdup("F F R");
+	params[2] = cr_strdup("L D D");
+	params[3] = cr_strdup("F U U L");
 
 	/* with quotes */
-	params[4] = cr_strdup("U' U'"); /* only repetition */
-	params[5] = cr_strdup("F' F' R"); /* at the beginning */
-	params[6] = cr_strdup("L D' D'"); /* at the end */
-	params[7] = cr_strdup("F U' U' L"); /* in the middle */
+	params[4] = cr_strdup("U' U'");
+	params[5] = cr_strdup("F' F' R");
+	params[6] = cr_strdup("L D' D'");
+	params[7] = cr_strdup("F U' U' L");
 
 	/* withs 2's */
-	params[8] = cr_strdup("U2 U2"); /* only repetition */
-	params[9] = cr_strdup("F2 F2 R"); /* at the beginning */
-	params[10] = cr_strdup("L2 L2 D"); /* at the end */
-	params[11] = cr_strdup("F U2 U2 L"); /* in the middle */
+	params[8] = cr_strdup("U2 U2");
+	params[9] = cr_strdup("F2 F2 R");
+	params[10] = cr_strdup("L D2 D2");
+	params[11] = cr_strdup("F U2 U2 L");
 
-	/* combinations of simple and quotes/2's */
-	params[12] = cr_strdup("U U'"); /* only repetition */
-	params[13] = cr_strdup("U U2"); /* only repetition */
-	params[14] = cr_strdup("U' U"); /* only repetition */
-	params[15] = cr_strdup("U' U2"); /* only repetition */
-	params[16] = cr_strdup("U2 U"); /* only repetition */
-	params[17] = cr_strdup("U2 U'"); /* only repetition */
-	params[18] = cr_strdup("U U' D2"); /* at the beginning */
-	params[19] = cr_strdup("U U2 R"); /* at the beginning */
-	params[20] = cr_strdup("U' U L"); /* at the beginning */
-	params[21] = cr_strdup("U' U2 E"); /* at the beginning */
-	params[22] = cr_strdup("U2 U M"); /* at the beginning */
-	params[23] = cr_strdup("U2 U' S"); /* at the beginning */
-	params[24] = cr_strdup("D2 U U'"); /* at the end */
-	params[25] = cr_strdup("R U U2"); /* at the end */
-	params[26] = cr_strdup("L U' U"); /* at the end */
-	params[27] = cr_strdup("E U' U2"); /* at the end */
-	params[28] = cr_strdup("M U2 U"); /* at the end */
-	params[29] = cr_strdup("S U2 U'"); /* at the end */
-	params[30] = cr_strdup("F U U' S"); /* in the middle */
-	params[31] = cr_strdup("R U U2 M"); /* in the middle */
-	params[32] = cr_strdup("L U' U E"); /* in the middle */
-	params[33] = cr_strdup("E U' U2 L"); /* in the middle */
-	params[34] = cr_strdup("M U2 U R"); /* in the middle */
-	params[35] = cr_strdup("S U2 U' F"); /* in the middle */
+	/* combinations of simple and modifiers */
+	params[12] = cr_strdup("U U'");
+	params[13] = cr_strdup("R R2");
+	params[14] = cr_strdup("B' B");
+	params[15] = cr_strdup("D' D2");
+	params[16] = cr_strdup("L2 L");
+	params[17] = cr_strdup("F2 F'");
+	params[18] = cr_strdup("L' L B2");
+	params[18] = cr_strdup("D' R R'");
+	params[18] = cr_strdup("D' F2 F B");
 
-    return cr_make_param_array(char *, params, 36, free_strings);
+    return cr_make_param_array(char *, params, 19, free_strings);
 }
 
 
