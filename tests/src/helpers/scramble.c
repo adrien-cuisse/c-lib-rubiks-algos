@@ -31,24 +31,20 @@ size_t count_occurences(char const * haystack, char needle)
 
 char const * find_repeated_moves(char const * scramble)
 {
-	char const * last_move = & scramble[0];
+	char const * previous_move;
 
-	for (int index = 0; scramble[index] != '\0'; index++)
+	while (1)
 	{
-		while (scramble[index] != ' ')
-		{
-			index++;
-			if (scramble[index] == '\0')
-				return NULL;
-		}
+		previous_move = scramble;
+		scramble = strchr(scramble + 1, ' ');
 
-		if (scramble[index] == '\0')
+		if (scramble == NULL)
 			return NULL;
 
-		if (scramble[++index] == * last_move)
-			return last_move;
+		scramble++;
 
-		last_move = & scramble[index];
+		if (previous_move[0] == scramble[0])
+			return previous_move;
 	}
 
 	return NULL;
