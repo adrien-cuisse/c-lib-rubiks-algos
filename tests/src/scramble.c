@@ -155,11 +155,12 @@ Test(scramble, scramble_is_only_made_of_valid_moves)
 
 /**
  * Called by Criterion, if specified in cr_make_param_array()
- * Deallocates string which were allocated for a parameterized test
+ * Deallocates strings which were allocated for a parameterized test
+ * The array itself is NOT deallocated
  *
- * @param crp - provided by the library
+ * @param crp - provided by Criterion
  */
-void free_repeating_moves(struct criterion_test_params * crp)
+void free_strings(struct criterion_test_params * crp)
 {
     char ** strings = (char **) crp->params;
 
@@ -236,7 +237,7 @@ ParameterizedTestParameters(scramble, check_finds_repetition)
 	params[34] = cr_strdup("M U2 U R"); /* in the middle */
 	params[35] = cr_strdup("S U2 U' F"); /* in the middle */
 
-    return cr_make_param_array(char *, params, 36, free_repeating_moves);
+    return cr_make_param_array(char *, params, 36, free_strings);
 }
 
 
@@ -253,6 +254,69 @@ ParameterizedTest(char ** bad_scramble, scramble, check_finds_repetition)
 		"repetition not found, expected [%s] in [%s]",
 		repetition,
 		* bad_scramble);
+}
+
+
+ParameterizedTestParameters(scramble, check_finds_invalid_move)
+{
+	static char * params[23];
+
+	/* complete junk */
+	params[0] = cr_strdup("not even a scramble");
+
+	/* invalid symbol */
+	params[1] = cr_strdup("a B L");
+	params[2] = cr_strdup("B' c L2");
+	params[3] = cr_strdup("L R g");
+
+	/* repeated move */
+	params[4] = cr_strdup("LL R U2");
+	params[5] = cr_strdup("L' B'B' R");
+	params[6] = cr_strdup("L' R2 F2F2");
+
+	/* not properly delimited */
+	params[7] = cr_strdup("BD' U' R'");
+	params[8] = cr_strdup("L' FD' F'");
+	params[9] = cr_strdup("U' F' D'L2");
+
+	/* standalone modifiers */
+	params[10] = cr_strdup("' L F2");
+	params[11] = cr_strdup("2 D' L'");
+	params[12] = cr_strdup("U ' R");
+	params[13] = cr_strdup("R' 2 U");
+	params[14] = cr_strdup("F L' '");
+	params[15] = cr_strdup("B2 U2 2");
+
+	/* several modifiers */
+	params[16] = cr_strdup("D'2 L2 F'");
+	params[17] = cr_strdup("F2 D2' U");
+	params[18] = cr_strdup("R' D R22");
+	params[19] = cr_strdup("R' D R''");
+
+	/* prefixed modifiers */
+	params[20] = cr_strdup("'R D' F");
+	params[21] = cr_strdup("U' ''L R'");
+	params[22] = cr_strdup("L2 U 2'B");
+
+    return cr_make_param_array(char *, params, 23, free_strings);
+}
+
+
+ParameterizedTest(char ** invalid_scramble, scramble, check_finds_invalid_move)
+{
+    // given: a scramble with invalid moves
+
+	// when: trying to find them
+	char const * invalid_move = find_invalid_move(
+		* invalid_scramble,
+		valid_moves);
+
+	// then they should be found
+	cr_assert_not_null(
+		invalid_move,
+		"invalid move not detected, expected [%s] in [%s]",
+		invalid_move,
+		* invalid_scramble);
 }
 
 #endif /* CHECK_FIND_REPETITION */
