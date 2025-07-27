@@ -73,17 +73,17 @@ static int add_move(char ** moves, char const * move, int index)
 
 
 /**
- * Checks if both moves can be turned into a single one
+ * Checks if both moves can NOT be combined into a single one
  *
  * @param first - the first move to check
  *
  * @param second - the second move to check
  *
- * @return int - 1 if moves can be combined, 0 otherwise
+ * @return int - 1 if moves can NOT be combined, 0 if they can
  */
-static int moves_can_be_combined(char const * first, char const * second)
+static int moves_cannot_be_combined(char const * first, char const * second)
 {
-	return first[0] == second[0];
+	return first[0] != second[0];
 }
 
 
@@ -234,7 +234,7 @@ static int add_random_move(char ** moves, size_t moves_count)
 	{
 		new_move = pick_random_move();
 
-		if (! moves_can_be_combined(previous_move, new_move))
+		if (moves_cannot_be_combined(previous_move, new_move))
 			return add_move(moves, new_move, moves_count);
 
 		if (makes_double_move(previous_move, new_move))
