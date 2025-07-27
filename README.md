@@ -7,13 +7,13 @@ A rubik's cube shared library writen in **C**
 
 ## Features
 
-- scramble generation without repetions (like <R> <R2> or <L'> <L>)
+- scramble generation without repetions (like [R R2] or [L' L])
 
 
 ## Features to come
 
-- optional camera rotations in scrambles (eg., <U> <D'> = <E> <y>)
-- wide moves in scrambles (eg., <U> <E> = <u>)
+- optional camera rotations in scrambles (eg., [U D'] = [E y])
+- wide moves in scrambles (eg., [U E] = [u])
 
 
 ## 🫨 Why ?
