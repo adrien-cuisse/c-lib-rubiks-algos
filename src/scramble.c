@@ -280,6 +280,24 @@ static size_t compute_scramble_length(char ** moves, size_t moves_count)
 
 
 /**
+ * Allocates the buffer to write to complete scramble
+ *
+ * @param moves - array of moves that will be writen in the scramble
+ *
+ * @param moves_count - how many moves are in the array
+ *
+ * @return char * - the allocated buffer, including room for the
+ * 	NULL-terminating byte
+ */
+static char * allocate_scramble(char ** moves, size_t moves_count)
+{
+	size_t scramble_length = compute_scramble_length(moves, moves_count);
+
+	return malloc(scramble_length + 1);
+}
+
+
+/**
  * Concatenates all moves in the array, making a space-delimited scramble
  * 	sequence
  *
@@ -295,11 +313,7 @@ static char * join_moves(char ** moves, size_t moves_count)
 	size_t move_index = 0;
 	size_t move_length;
 
-	char * scramble;
-
-	size_t scramble_length = compute_scramble_length(moves, moves_count);
-
-	scramble = malloc(scramble_length + 1);
+	char * scramble = allocate_scramble(moves, moves_count);
 	if (scramble == NULL)
 		return NULL;
 
