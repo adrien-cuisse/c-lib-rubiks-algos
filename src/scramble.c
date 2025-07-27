@@ -274,6 +274,32 @@ static int modifiers_cancel_each_other(char const * first, char const * second)
 
 
 /**
+ * Updates the previous one, based on the new one
+ *
+ * @param previous_move - the move to update
+ *
+ * @param new_move - the move that alters the one to update
+ *
+ * @return int - always returns 0
+ */
+static int combine_moves(char * previous_move, char const * new_move)
+{
+	if (makes_double_move(previous_move, new_move))
+		return apply_double_move_modifier(previous_move);
+
+	if (modifiers_cancel_each_other(previous_move, new_move))
+		return strip_move_modifier(previous_move);
+
+	if (makes_reverse_move(previous_move, new_move))
+		return apply_reverse_move_modifier(previous_move);
+
+	/* can't be reached, if we handled cases well and moves are compatible */
+
+	return 0;
+}
+
+
+/**
  * Adds a new random move in the array, or combines it with the last one
  * 	if possible
  *
@@ -298,18 +324,7 @@ static int add_random_move(char ** moves, size_t moves_count)
 	if (moves_cannot_be_combined(previous_move, new_move))
 		return add_move(moves, new_move, moves_count);
 
-	if (makes_double_move(previous_move, new_move))
-		return apply_double_move_modifier(previous_move);
-
-	if (modifiers_cancel_each_other(previous_move, new_move))
-		return strip_move_modifier(previous_move);
-
-	if (makes_reverse_move(previous_move, new_move))
-		return apply_reverse_move_modifier(previous_move);
-
-	/* can't be reached, if we handled cases properly */
-
-	return 0;
+	return combine_moves(previous_move, new_move);
 }
 
 
