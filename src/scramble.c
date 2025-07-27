@@ -114,7 +114,7 @@ static char const * pick_compatible_random_move(char const * previous_move)
 /**
  * Stores a copy of [move] in the array [moves], at the specified [index]
  *
- * @param moves - the array of string to write the [move] in
+ * @param moves - the array of string to write the move in
  *
  * @param move -  the move to write in the array, if it's
  * 	simple (eg. <F> or <R>), it's guaranteed to be long enough to be
