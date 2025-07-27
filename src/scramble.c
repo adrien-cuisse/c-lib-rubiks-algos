@@ -6,7 +6,7 @@
 
 
 /**
- * The maximum length for a single move notation, eg. U2
+ * The maximum length for a single move notation, eg. <U2>
  */
 #define MOVE_MAX_LENGTH 2
 
