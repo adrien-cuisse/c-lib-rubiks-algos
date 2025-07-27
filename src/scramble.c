@@ -64,7 +64,7 @@ static char const * pick_random_move()
 
 
 /**
- * Checks if apply both moves is like doing nothing at all, eg. :
+ * Checks if applying both moves is like doing nothing at all, eg. :
  * 	- 360° turn: <F2> <F2>
  *  - 0° turn: <L> <L'> or <U'> <U>
  *
