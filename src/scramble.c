@@ -32,19 +32,19 @@ typedef enum
  */
 static char const * valid_moves[] =
 {
-    /* base moves should twice the normal rate */
-    "L",  "R",  "U",  "D",  "F",  "B",
-    "L",  "R",  "U",  "D",  "F",  "B",
-    "L'", "R'", "U'", "D'", "F'", "B'",
-    "L'", "R'", "U'", "D'", "F'", "B'",
+	/* base moves should twice the normal rate */
+	"L",  "R",  "U",  "D",  "F",  "B",
+	"L",  "R",  "U",  "D",  "F",  "B",
+	"L'", "R'", "U'", "D'", "F'", "B'",
+	"L'", "R'", "U'", "D'", "F'", "B'",
 
-    /* center slices moves are lame, normal rate */
-    "M",  "E",  "S",
-    "M'", "E'", "S'",
+	/* center slices moves are lame, normal rate */
+	"M",  "E",  "S",
+	"M'", "E'", "S'",
 
-    /* wide moves aren't natural, normal rate */
-    "L2", "R2", "U2", "D2", "F2", "B2",
-    "M2",  "E2",  "S2",
+	/* wide moves aren't natural, normal rate */
+	"L2", "R2", "U2", "D2", "F2", "B2",
+	"M2",  "E2",  "S2",
 };
 static int valid_moves_count = sizeof(valid_moves) / sizeof(* valid_moves);
 
@@ -401,17 +401,17 @@ static char * join_moves(char ** moves, size_t moves_count)
  */
 static char ** generate_moves(size_t size)
 {
-    char ** moves;
-    size_t added_moves = 0;
+	char ** moves;
+	size_t added_moves = 0;
 
-    moves = malloc(size * sizeof(* moves));
+	moves = malloc(size * sizeof(* moves));
 	if (moves == NULL)
 		return NULL;
 
 	while (added_moves < size)
 		added_moves += add_random_move(moves, added_moves);
 
-    return moves;
+	return moves;
 }
 
 
@@ -436,13 +436,13 @@ static void delete_move(char ** move)
  */
 static void delete_moves(char *** moves, size_t size)
 {
-    size_t index;
+	size_t index;
 
-    for (index = 0; index < size; index++)
+	for (index = 0; index < size; index++)
 		delete_move(& (* moves)[index]);
 
-    free(* moves);
-    * moves = NULL;
+	free(* moves);
+	* moves = NULL;
 }
 
 
@@ -454,12 +454,12 @@ char * rubiks_generate_scramble(size_t size)
 	if (size == 0)
 		return NULL;
 
-    moves = generate_moves(size);
+	moves = generate_moves(size);
 	if (moves == NULL)
 		return NULL;
 
 	scramble = join_moves(moves, size);
-    delete_moves(& moves, size);
+	delete_moves(& moves, size);
 
 	return scramble;
 }

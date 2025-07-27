@@ -88,7 +88,7 @@ ParameterizedTestParameters(scramble, moves_are_space_separated)
 {
 	static size_t sizes[] = { 2, BIG_SIZE };
 
-    return cr_make_param_array(size_t, sizes, 2);
+	return cr_make_param_array(size_t, sizes, 2);
 }
 
 
@@ -162,10 +162,10 @@ Test(scramble, scramble_is_only_made_of_valid_moves)
  */
 void free_strings(struct criterion_test_params * crp)
 {
-    char ** strings = (char **) crp->params;
+	char ** strings = (char **) crp->params;
 
 	for (size_t index = 0; index < crp->length; index++)
-        cr_free(strings[index]);
+		cr_free(strings[index]);
 }
 
 
@@ -180,7 +180,7 @@ void free_strings(struct criterion_test_params * crp)
  */
 char * cr_strdup(char const * string)
 {
-    char * copy = cr_malloc(strlen(string) + 1);
+	char * copy = cr_malloc(strlen(string) + 1);
 	if (copy != NULL)
 		strcpy(copy, string);
 
@@ -222,13 +222,13 @@ ParameterizedTestParameters(scramble, check_finds_repetition)
 	params[18] = cr_strdup("D' R R'");
 	params[18] = cr_strdup("D' F2 F B");
 
-    return cr_make_param_array(char *, params, 19, free_strings);
+	return cr_make_param_array(char *, params, 19, free_strings);
 }
 
 
 ParameterizedTest(char ** bad_scramble, scramble, check_finds_repetition)
 {
-    // given: a scramble with a repetition
+	// given: a scramble with a repetition
 
 	// when: checking for repetitions
 	char const * repetition = find_repeated_moves(* bad_scramble);
@@ -283,13 +283,13 @@ ParameterizedTestParameters(scramble, check_finds_invalid_move)
 	params[21] = cr_strdup("U' ''L R'");
 	params[22] = cr_strdup("L2 U 2'B");
 
-    return cr_make_param_array(char *, params, 23, free_strings);
+	return cr_make_param_array(char *, params, 23, free_strings);
 }
 
 
 ParameterizedTest(char ** invalid_scramble, scramble, check_finds_invalid_move)
 {
-    // given: a scramble with invalid moves
+	// given: a scramble with invalid moves
 
 	// when: trying to find them
 	char const * invalid_move = find_invalid_move(
