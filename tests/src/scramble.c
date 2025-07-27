@@ -176,7 +176,7 @@ void free_strings(struct criterion_test_params * crp)
  *
  * @param string - the string to duplicate
  *
- * @return char * - the copy of the [string]
+ * @return char * - the copy of the string
  */
 char * cr_strdup(char const * string)
 {

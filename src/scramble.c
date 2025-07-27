@@ -112,7 +112,7 @@ static char const * pick_compatible_random_move(char const * previous_move)
 
 
 /**
- * Stores a copy of [move] in the array [moves], at the specified [index]
+ * Stores a copy of a [move] in an array, at the specified index
  *
  * @param moves - the array of string to write the move in
  *
@@ -150,7 +150,7 @@ static int moves_cannot_be_combined(char const * first, char const * second)
 
 
 /**
- * Applies a modifier on the move (eg. <'> or <2>), removing any previous one
+ * Applies a [modifier] on a [move] (eg. <'> or <2>), removing any previous one
  *
  * @param move - the move to apply the modifier to
  *
@@ -194,7 +194,7 @@ static int apply_reverse_move_modifier(char * move)
 
 
 /**
- * Removes the modifier on the move (eg. <'> or <2>)
+ * Removes the modifier on a [move] (eg. <'> or <2>)
  *
  * @param move - the move to remove the modifier from
  *
@@ -274,7 +274,7 @@ static int modifiers_cancel_each_other(char const * first, char const * second)
 
 
 /**
- * Updates the previous one, based on the new one
+ * Updates the previous move, based on the new one
  *
  * @param previous_move - the move to update
  *
@@ -300,7 +300,7 @@ static int combine_moves(char * previous_move, char const * new_move)
 
 
 /**
- * Adds a new random move in the array, or combines it with the last one
+ * Adds a new random move in an array, or combines it with the last one
  * 	if possible
  *
  * @param moves - the array to add a new move in
@@ -351,7 +351,8 @@ static size_t compute_scramble_length(char ** moves, size_t moves_count)
 
 
 /**
- * Allocates the buffer to write to complete scramble
+ * Allocates the buffer to write the complete scramble, including the
+ * 	NULL-terminating byte
  *
  * @param moves - array of moves that will be writen in the scramble
  *
@@ -369,7 +370,7 @@ static char * allocate_scramble(char ** moves, size_t moves_count)
 
 
 /**
- * Writes a [move] in the [scrumble], where the [scramble] is pointing to
+ * Writes a [move] in a [scrumble], where the [scramble] is pointing to
  *
  * @param scramble - the scramble to write the move to
  *
@@ -445,7 +446,7 @@ static char ** generate_moves(size_t size)
 
 
 /**
- * Deallocates the move and sets it to NULL
+ * Deallocates a [move] and sets it to NULL
  *
  * @param move - the move to delete
  */
@@ -457,7 +458,7 @@ static void delete_move(char ** move)
 
 
 /**
- * Deallocates the moves and the array itself, setting everything to NULL
+ * Deallocates the [moves] and the array itself, setting everything to NULL
  *
  * @param moves - the array of moves to delete
  *
