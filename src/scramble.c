@@ -112,7 +112,7 @@ static char const * pick_compatible_random_move(char const * previous_move)
 
 
 /**
- * Stores a copy of [moves] in [moves]
+ * Stores a copy of [move] in the array [moves], ath the specified [index]
  *
  * @param moves - the array of string to write the [move] in
  *
