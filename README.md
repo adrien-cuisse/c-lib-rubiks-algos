@@ -14,11 +14,12 @@ A rubik's cube shared library writen in **C**
 
 - optional camera rotations in scrambles (eg., [U D'] = [E y])
 - wide moves in scrambles (eg., [U E] = [u])
+- solving
 
 
 ## 🫨 Why ?
 
-This library is intended to be the foundation of a 3D rubik's cube solver (GUI),
+This library is intended to be a foundation for a 3D rubik's cube solver (GUI),
 it's responsible for shuffling and resolving the cube
 
 
