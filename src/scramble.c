@@ -4,6 +4,9 @@
 #include <string.h>
 #include <time.h>
 
+#include "attributes.h"
+#include "../include/rubiks_moves.h"
+
 
 /**
  * The maximum length for a single move notation, eg. <U2>
