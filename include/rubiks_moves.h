@@ -1,6 +1,6 @@
 
-#ifndef RUBIKS_MOVES_HEADER
-#define RUBIKS_MOVES_HEADER
+#ifndef RUBIKS_ALGOS_HEADER
+#define RUBIKS_ALGOS_HEADER
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,4 +30,4 @@ IMPORTANT_RETURN char * rubiks_generate_scramble(size_t length);
 }
 #endif
 
-#endif /* RUBIKS_MOVES_HEADER */
+#endif /* RUBIKS_ALGOS_HEADER */

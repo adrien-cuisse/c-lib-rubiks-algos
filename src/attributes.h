@@ -1,6 +1,6 @@
 
-#ifndef ATTRIBUTES_HEADER
-#define ATTRIBUTES_HEADER
+#ifndef RUBIKS_ALGOS_ATTRIBUTES_HEADER
+#define RUBIKS_ALGOS_ATTRIBUTES_HEADER
 
 #if defined(__clang__) /* CLANG */
 #	define IMPORTANT_RETURN __attribute__ ((warn_unused_result))
@@ -12,4 +12,4 @@
 #	error "Visibility not implemented for MinGW"
 #endif
 
-#endif /* ATTRIBUTES_HEADER */
+#endif /* RUBIKS_ALGOS_ATTRIBUTES_HEADER */

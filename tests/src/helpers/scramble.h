@@ -1,6 +1,6 @@
 
-#ifndef SCRAMBLE_HELPERS_HEADER
-#define SCRAMBLE_HELPERS_HEADER
+#ifndef RUBIKS_SCRAMBLE_HELPERS_HEADER
+#define RUBIKS_SCRAMBLE_HELPERS_HEADER
 
 #include <stddef.h>
 
@@ -52,4 +52,4 @@ char * find_invalid_move(char * scramble, char const ** valid_moves);
 
 
 
-#endif /* SCRAMBLE_HELPERS_HEADER */
+#endif /* RUBIKS_SCRAMBLE_HELPERS_HEADER */
