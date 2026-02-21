@@ -304,4 +304,4 @@ ParameterizedTest(char ** invalid_scramble, scramble, check_finds_invalid_move)
 		* invalid_scramble);
 }
 
-#endif /* CHECK_FIND_REPETITION */
+#endif /* CHECK_HELPERS */
