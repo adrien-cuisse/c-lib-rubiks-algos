@@ -26,14 +26,14 @@ size_t count_occurrences(char const * haystack, char needle);
 
 
 /**
- * Checks if the [scramble] contains twice the same move in a row,
+ * Checks if the [scramble] contains consecutive moves on the same layer,
  * 	eg. <U U>, <L' L>, <F F2>, <R2 R'>, etc.
  *
  * @param scramble - the scramble to check
  *
  * @return char * - the position of the first repeating move, NULL if none
  */
-char const * find_repeated_moves(char const * scramble);
+char const * find_repeated_layers(char const * scramble);
 
 
 /**

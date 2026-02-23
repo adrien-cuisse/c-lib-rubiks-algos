@@ -112,14 +112,14 @@ ParameterizedTest(size_t * size, scramble, moves_are_space_separated)
 }
 
 
-Test(scramble, doesnt_contain_same_move_twice_in_a_row)
+Test(scramble, doesnt_contain_consecutive_moves_on_same_layer)
 {
 	// given
 	size_t big_size = BIG_SIZE;
 
 	// when
 	char * scramble = rubiks_generate_scramble(big_size);
-	char const * repetition = find_repeated_moves(scramble);
+	char const * repetition = find_repeated_layers(scramble);
 
 	// then
 	cr_assert_null(
@@ -227,7 +227,7 @@ static char * cr_strdup(char const * string)
 }
 
 
-ParameterizedTestParameters(scramble, check_finds_repetition)
+ParameterizedTestParameters(scramble, check_finds_layers_repetition)
 {
 	static char * params[19];
 
@@ -264,12 +264,12 @@ ParameterizedTestParameters(scramble, check_finds_repetition)
 }
 
 
-ParameterizedTest(char ** bad_scramble, scramble, check_finds_repetition)
+ParameterizedTest(char ** bad_scramble, scramble, check_finds_layers_repetition)
 {
 	// given: a scramble with a repetition
 
 	// when: checking for repetitions
-	char const * repetition = find_repeated_moves(* bad_scramble);
+	char const * repetition = find_repeated_layers(* bad_scramble);
 
 	// then they should be found
 	cr_assert_not_null(

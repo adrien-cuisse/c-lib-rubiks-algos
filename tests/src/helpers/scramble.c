@@ -63,7 +63,7 @@ static char const * get_next_move(char const * scramble)
 }
 
 
-char const * find_repeated_moves(char const * scramble)
+char const * find_repeated_layers(char const * scramble)
 {
 	char const * previous_move = scramble;
 
