@@ -198,7 +198,7 @@ static void free_scramble_repetition_params(struct criterion_test_params * crp)
  *
  * @param crp - provided by Criterion
  */
-void free_strings(struct criterion_test_params * crp)
+static void free_strings(struct criterion_test_params * crp)
 {
 	char ** strings = (char **) crp->params;
 
@@ -216,7 +216,7 @@ void free_strings(struct criterion_test_params * crp)
  *
  * @return char * - the copy of the string
  */
-char * cr_strdup(char const * string)
+static char * cr_strdup(char const * string)
 {
 	char * copy = cr_malloc(strlen(string) + 1);
 	if (copy != NULL)
