@@ -68,18 +68,19 @@ Test(scramble, returns_null_on_invalid_size)
 Test(scramble, scramble_is_only_made_of_valid_characters)
 {
 	// given
-	size_t size = 1;
+	size_t size = BIG_SIZE;
 
 	// given
 	char * scramble = rubiks_generate_scramble(size);
 
 	// then
-	size_t invalid_symbol_index = strspn(scramble, valid_symbols);
+	size_t valid_length = strspn(scramble, valid_symbols);
 	cr_assert_eq(
-		invalid_symbol_index,
+		valid_length,
 		strlen(scramble),
-		"invalid symbol [%c] in %s",
-		scramble[invalid_symbol_index],
+		"invalid symbol [%c] at position %zu in [%s]",
+		scramble[valid_length],
+		valid_length,
 		scramble);
 }
 
