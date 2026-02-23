@@ -154,6 +154,44 @@ Test(scramble, scramble_is_only_made_of_valid_moves)
 #ifdef CHECK_HELPERS
 
 /**
+ * Parameterized test argument for scrambles containing repetitions
+ */
+struct scramble_repetition
+{
+	/**
+	 * The scramble to check
+	 */
+	char * scramble;
+
+	/**
+	 * The repetition inside the scramble to include in the error message
+	 */
+	char * repetition;
+};
+
+
+
+
+/**
+ * Called by Criterion, if specified in cr_make_param_array()
+ * Deallocates strings which were allocated for a parameterized test
+ * The array itself is NOT deallocated
+ *
+ * @param crp - provided by Criterion
+ */
+static void free_scramble_repetition_params(struct criterion_test_params * crp)
+{
+	struct scramble_repetition * params = crp->params;
+
+	for (size_t index = 0; index < crp->length; index++)
+	{
+		cr_free(params[index].scramble);
+		cr_free(params[index].repetition);
+	}
+}
+
+
+/**
  * Called by Criterion, if specified in cr_make_param_array()
  * Deallocates strings which were allocated for a parameterized test
  * The array itself is NOT deallocated
@@ -183,7 +221,6 @@ char * cr_strdup(char const * string)
 	char * copy = cr_malloc(strlen(string) + 1);
 	if (copy != NULL)
 		strcpy(copy, string);
-
 
 	return copy;
 }
@@ -302,6 +339,66 @@ ParameterizedTest(char ** invalid_scramble, scramble, check_finds_invalid_move)
 		"invalid move not detected, expected [%s] in [%s]",
 		invalid_move,
 		* invalid_scramble);
+}
+
+
+ParameterizedTestParameters(scramble, check_finds_repeated_axis)
+{
+	static struct scramble_repetition params[19];
+
+	/* only repeated axis, no modifiers */
+	params[0] = (struct scramble_repetition) { cr_strdup("L M"), cr_strdup("L M") };
+	params[1] = (struct scramble_repetition) { cr_strdup("M R"), cr_strdup("M R") };
+	params[2] = (struct scramble_repetition) { cr_strdup("L R"), cr_strdup("L R") };
+	params[3] = (struct scramble_repetition) { cr_strdup("U E"), cr_strdup("U E") };
+	params[4] = (struct scramble_repetition) { cr_strdup("E D"), cr_strdup("E D") };
+	params[5] = (struct scramble_repetition) { cr_strdup("U D"), cr_strdup("U D") };
+	params[6] = (struct scramble_repetition) { cr_strdup("F S"), cr_strdup("F S") };
+	params[7] = (struct scramble_repetition) { cr_strdup("S B"), cr_strdup("S B") };
+	params[8] = (struct scramble_repetition) { cr_strdup("F B"), cr_strdup("F B") };
+
+	/* only repeated axis, with modifiers */
+	params[9] = (struct scramble_repetition) { cr_strdup("L' R'"), cr_strdup("L' R'") };
+	params[10] = (struct scramble_repetition) { cr_strdup("U2 D2"), cr_strdup("U2 D2") };
+	params[11] = (struct scramble_repetition) { cr_strdup("F' B2"), cr_strdup("F' B2") };
+	params[12] = (struct scramble_repetition) { cr_strdup("L2 M'"), cr_strdup("L2 M'") };
+
+	/* repeating axis is at the beginning */
+	params[13] = (struct scramble_repetition) { cr_strdup("D U M B"), cr_strdup("D U") };
+	params[14] = (struct scramble_repetition) { cr_strdup("D' E2 F2 E R'"), cr_strdup("D' E2") };
+
+	/* repeating axis is at the end */
+	params[15] = (struct scramble_repetition) { cr_strdup("R E D"), cr_strdup("E D") };
+	params[16] = (struct scramble_repetition) { cr_strdup("R' E2 D"), cr_strdup("E2 D") };
+
+	/* repeating axis is in the middle */
+	params[17] = (struct scramble_repetition) { cr_strdup("M E D S"), cr_strdup("E D") };
+	params[18] = (struct scramble_repetition) { cr_strdup("M U2 R' D' E2 R2"), cr_strdup("D' E2") };
+
+	return cr_make_param_array(
+		struct scramble_repetition,
+		params,
+		19,
+		free_scramble_repetition_params);
+}
+
+
+ParameterizedTest(
+	struct scramble_repetition * params,
+	scramble,
+	check_finds_repeated_axis)
+{
+	// given: a scramble with consecutive repeating axis
+
+	// when: trying to find them
+	char const * repeated_axis = find_repeated_axis(params->scramble);
+
+	// then they should be found
+	cr_assert_not_null(
+		repeated_axis,
+		"repeated axis not found, expected [%s] in [%s]",
+		params->repetition,
+		params->scramble);
 }
 
 #endif /* CHECK_HELPERS */

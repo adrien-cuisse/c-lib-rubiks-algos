@@ -37,6 +37,17 @@ char const * find_repeated_moves(char const * scramble);
 
 
 /**
+ * Checks if the [scramble] contains consecutive moves on the same axis
+ * eg. <[R L] U>, <F' [U2 E2] L' S>, <D R' U' [M M2] E' R S'>, etc.
+ *
+ * @param scramble - the scramble to check
+ *
+ * @return - the first repeated axis found, NULL if none
+ */
+char const * find_repeated_axis(char const * scramble);
+
+
+/**
  * Returns the first invalid move of [scramble], ie. not in [valid_moves]
  *
  * @param scramble - the scramble to search in, will be overwritten (strtok)

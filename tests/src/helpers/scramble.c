@@ -9,6 +9,14 @@
 
 
 
+typedef enum Axis
+{
+	AXIS_1, AXIS_2, AXIS_3
+} Axis;
+
+
+
+
 void init_random(void)
 {
 	srand(time(NULL));
@@ -45,6 +53,55 @@ char const * find_repeated_moves(char const * scramble)
 
 		if (previous_move[0] == scramble[0])
 			return previous_move;
+	}
+}
+
+
+char const * get_next_move(char const * scramble)
+{
+	char const * next_move;
+
+	if (scramble == NULL)
+		return NULL;
+
+	next_move = strchr(scramble + 1, ' ');
+	if (next_move == NULL)
+		return NULL;
+
+	return next_move + 1;
+}
+
+
+static Axis get_move_axis(char move)
+{
+	if ((move == 'L') || (move == 'M') || (move == 'R'))
+		return AXIS_1;
+	if ((move == 'U') || (move == 'E') || (move == 'D'))
+		return AXIS_2;
+	if ((move == 'F') || (move == 'S') || (move == 'B'))
+		return AXIS_3;
+
+	fprintf(stderr, "WARNING: get_move_axis(): unknown move %c\n", move);
+
+	return '?';
+}
+
+
+char const * find_repeated_axis(char const * scramble)
+{
+	char const * current_move = scramble;
+	Axis current_axis = get_move_axis(* current_move);
+	char const * next_move;
+	Axis next_axis;
+
+	while ((next_move = get_next_move(current_move)) != NULL)
+	{
+		next_axis = get_move_axis(* next_move);
+		if (current_axis == next_axis)
+			return current_move;
+
+		current_move = next_move;
+		current_axis = next_axis;
 	}
 
 	return NULL;
