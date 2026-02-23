@@ -1,7 +1,7 @@
 
 #include <stdlib.h>
 
-#include "../include/rubiks_moves.h"
+#include "../include/rubiks_algos.h"
 
 
 

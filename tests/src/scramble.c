@@ -4,7 +4,7 @@
 #include <criterion/criterion.h>
 #include <criterion/parameterized.h>
 
-#include "../../include/rubiks_moves.h"
+#include "../../include/rubiks_algos.h"
 
 #include "helpers/scramble.h"
 
