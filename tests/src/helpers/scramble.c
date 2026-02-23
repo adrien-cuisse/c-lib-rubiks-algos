@@ -57,7 +57,7 @@ char const * find_repeated_moves(char const * scramble)
 }
 
 
-char const * get_next_move(char const * scramble)
+static char const * get_next_move(char const * scramble)
 {
 	char const * next_move;
 
