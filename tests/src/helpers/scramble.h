@@ -61,17 +61,6 @@ char const * find_repeated_axis(char const * scramble);
 char * find_invalid_move(char * scramble, char const ** valid_moves);
 
 
-/**
- * Replacement for strdup which could be missing from the used libc version
- * Caller is in charge of the allocated memory
- *
- * @param string - the string to duplicate
- *
- * @return - the duplicated string
- */
-char * duplicate_string(char const * string);
-
-
 
 
 #endif /* RUBIKS_SCRAMBLE_HELPERS_HEADER */

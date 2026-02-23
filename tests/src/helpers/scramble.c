@@ -157,18 +157,3 @@ char * find_invalid_move(char * scramble, char const ** valid_moves)
 
 	return NULL;
 }
-
-
-char * duplicate_string(char const * string)
-{
-	char * copy;
-
-	if (string == NULL)
-		return NULL;
-
-	copy = malloc(strlen(string) + 1);
-	if (copy != NULL)
-		strcpy(copy, string);
-
-	return copy;
-}

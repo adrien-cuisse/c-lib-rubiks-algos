@@ -138,7 +138,7 @@ Test(scramble, scramble_is_only_made_of_valid_moves)
 	// when
 	char * scramble = rubiks_generate_scramble(big_size);
 	char * first_invalid_move = find_invalid_move(
-		duplicate_string(scramble),
+		scramble,
 		valid_moves);
 
 	// then
