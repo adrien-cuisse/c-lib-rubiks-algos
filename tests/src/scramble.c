@@ -1,7 +1,5 @@
 
-#include <stdio.h>
 #include <string.h>
-#include <time.h>
 
 #include <criterion/criterion.h>
 #include <criterion/parameterized.h>
