@@ -40,7 +40,8 @@ static char const * valid_moves[] =
 	"L'", "R'", "U'", "D'", "F'", "B'", "E'", "M'", "S'",
 	"L2", "R2", "U2", "D2", "F2", "B2", "E2", "M2", "S2",
 
-	NULL /* sentinel */
+	/* sentinel */
+	NULL
 };
 
 
@@ -192,8 +193,7 @@ static void free_scramble_tests_params(struct criterion_test_params * crp)
 
 /**
  * Duplicates a string to be used in a parameterized test
- * Strings from libc malloc() are unavailable in sub-processes because
- * 	of ASLR
+ * Memory from libc malloc() is unavailable in sub-processes because of ASLR
  *
  * @param string - the string to duplicate
  *
