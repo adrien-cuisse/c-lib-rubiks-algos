@@ -31,10 +31,10 @@ size_t count_occurrences(char const * haystack, char needle)
 {
 	size_t count = 0;
 
-	for (int index = 0; haystack[index] != '\0'; index++)
+	while ((haystack = strchr(haystack, needle)) != NULL)
 	{
-		if (haystack[index] == needle)
-			count++;
+		haystack++;
+		count++;
 	}
 
 	return count;
