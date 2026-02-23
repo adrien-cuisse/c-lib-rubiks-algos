@@ -37,26 +37,6 @@ size_t count_occurences(char const * haystack, char needle)
 }
 
 
-char const * find_repeated_moves(char const * scramble)
-{
-	char const * previous_move;
-
-	while (1)
-	{
-		previous_move = scramble;
-		scramble = strchr(scramble + 1, ' ');
-
-		if (scramble == NULL)
-			return NULL;
-
-		scramble++;
-
-		if (previous_move[0] == scramble[0])
-			return previous_move;
-	}
-}
-
-
 static char const * get_next_move(char const * scramble)
 {
 	char const * next_move;
@@ -69,6 +49,22 @@ static char const * get_next_move(char const * scramble)
 		return NULL;
 
 	return next_move + 1;
+}
+
+
+char const * find_repeated_moves(char const * scramble)
+{
+	char const * previous_move = scramble;
+
+	while ((scramble = get_next_move(scramble)) != NULL)
+	{
+		if (previous_move[0] == scramble[0])
+			return previous_move;
+
+		previous_move = scramble;
+	}
+
+	return NULL;
 }
 
 
