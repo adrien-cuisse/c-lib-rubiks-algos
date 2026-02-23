@@ -8,13 +8,21 @@ BIN_DIR=bin
 LIB_DIR=lib
 TESTS_DIR=tests
 
-LIBRARY=rubiks-algos
+# Target and versioning
+LIB_NAME=rubiks-algos
+LIB_MAJOR_VERSION=0
+LIB_MINOR_VERSION=1
+LIB_PATCH_VERSION=0
+STATIC_LIBRARY_NAME=lib$(LIB_NAME)-$(LIB_MAJOR_VERSION)-$(LIB_MINOR_VERSION)-$(LIB_PATCH_VERSION).a
+SHARED_LIB_LINKER_NAME=lib$(LIB_NAME).so
+SHARED_LIB_SONAME=$(SHARED_LIB_LINKER_NAME).$(LIB_MAJOR_VERSION)
+SHARED_LIB_REAL_NAME=$(SHARED_LIB_SONAME).$(LIB_MINOR_VERSION).$(LIB_PATCH_VERSION)
 
 # Release sources compilation
 RELEASE_SRC=$(shell find $(SRC_DIR)/ -type f -name '*.c')
 RELEASE_OBJ=$(subst $(SRC_DIR),$(OBJ_DIR),$(RELEASE_SRC:.c=.o))
-RELEASE_CFLAGS=-Wall -Wextra -Werror -ansi -pedantic -fpic #-fvisibility=hidden -O3
-RELEASE_LDFLAGS=
+RELEASE_CFLAGS=-fpic -O3 -Wall -Wextra -Werror -ansi -pedantic#-fvisibility=hidden
+RELEASE_LDFLAGS=-fpic -shared -Wl,-soname,$(SHARED_LIB_LINKER_NAME)
 
 # Tests only structure
 TESTS_SRC_DIR=$(addprefix $(TESTS_DIR)/,$(SRC_DIR))
@@ -29,20 +37,21 @@ TESTS_UTILS_OBJ=$(subst $(TESTS_SRC_DIR),$(TESTS_OBJ_DIR),$(TESTS_UTILS_SRC:.c=.
 TESTS_SRC=$(shell find $(TESTS_SRC_DIR) -type f -name '*.c')
 TESTS_SRC:=$(filter-out $(TESTS_UTILS_SRC),$(TESTS_SRC))
 TESTS_OBJ=$(subst $(TESTS_SRC_DIR),$(TESTS_OBJ_DIR),$(TESTS_SRC:.c=.o))
-TESTS_CFLAGS=$(subst -ansi,-std=c99,$(RELEASE_CFLAGS)) # Criterion is not C89 compliant
-TESTS_LDFLAGS=-lcriterion -L$(LIB_DIR)/ -l$(LIBRARY)
+# Criterion is not C89 compliant
+TESTS_CFLAGS=$(subst -ansi,-std=c99,$(RELEASE_CFLAGS))
+TESTS_LDFLAGS=-lcriterion -L$(LIB_DIR)/ -l$(LIB_NAME)
 TESTS_BINS=$(subst $(TESTS_SRC_DIR),$(TESTS_BIN_DIR),$(TESTS_SRC:.c=))
 
 
 default: run-tests
 
-rebuild: clean-all run-tests lib
+rebuild: clean-all run-tests shared-library
 
-lib: library-algorithms
 
+# Tests are run with local build
 .PHONY: run-tests
-run-tests: lib $(TESTS_BINS)
-	@for TEST_BIN in $(TESTS_BINS) ; do   \
+run-tests: shared-library $(TESTS_BINS)
+	@for TEST_BIN in $(TESTS_BINS) ; do \
 		LD_LIBRARY_PATH=$(LIB_DIR)/ ./$$TEST_BIN; \
 	done
 
@@ -57,23 +66,26 @@ $(TESTS_OBJ_DIR)/%.o: $(TESTS_SRC_DIR)/%.c
 	$(CC) $(TESTS_CFLAGS) -c $^ -o $@
 
 # Test binaries
-.PHONY: tests-binaries
-tests-binaries: $(TESTS_BINS)
 $(TESTS_BIN_DIR)/%: $(TESTS_OBJ_DIR)/%.o $(TESTS_UTILS_OBJ)
-	@echo "Make binaries..."
-	@echo "$(TESTS_UTILS_SRC)"
-	@echo "$(TESTS_UTILS_OBJ)"
 	@mkdir -p $(dir $@)
 	$(CC) $(TESTS_LDFLAGS) $^ -o $@
 
-# Don't delete objects when binaries are made
-.PRECIOUS: $(OBJ_DIR)/%.o $(TESTS_OBJ_DIR)/%.o
-
-library-algorithms: $(LIB_DIR)/lib$(LIBRARY).so
-$(LIB_DIR)/lib$(LIBRARY).so: $(RELEASE_OBJ)
+# Static library local build
+static-library: $(LIB_DIR)/$(STATIC_LIBRARY_NAME)
+$(LIB_DIR)/$(STATIC_LIBRARY_NAME): $(RELEASE_OBJ)
 	@mkdir -p $(LIB_DIR)/
-	gcc -shared -o $@ $^
+	ar -rcs $@ $^
 	strip --discard-all $@
+
+
+# Shared library local build
+shared-library: $(LIB_DIR)/$(SHARED_LIB_REAL_NAME)
+$(LIB_DIR)/$(SHARED_LIB_REAL_NAME): $(RELEASE_OBJ)
+	@mkdir -p $(LIB_DIR)/
+	$(CC) $(RELEASE_LDFLAGS) -o $@ $^
+	strip --discard-all $@
+	cd $(LIB_DIR) && ln -sf $(SHARED_LIB_REAL_NAME) $(SHARED_LIB_SONAME)
+	cd $(LIB_DIR) && ln -sf $(SHARED_LIB_SONAME) $(SHARED_LIB_LINKER_NAME)
 
 .PHONY: clean
 clean:
@@ -81,4 +93,4 @@ clean:
 
 .PHONY: clean-all
 clean-all: clean
-	rm -rf $(TESTS_BINS) $(LIB_DIR)/lib$(LIBRARY).so
+	rm -rf $(TESTS_BINS) $(LIB_DIR)/*
