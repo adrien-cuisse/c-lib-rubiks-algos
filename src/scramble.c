@@ -1,17 +1,7 @@
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
 
-#include "attributes.h"
 #include "../include/rubiks_moves.h"
-
-
-/**
- * The maximum length for a single move notation, eg. <U2>
- */
-#define MOVE_MAX_LENGTH 2
 
 
 
@@ -19,480 +9,315 @@
 /**
  * The modifiers which can be applied to a move
  */
-typedef enum
+typedef enum Modifier
 {
-	DOUBLE_MODIFIER = '2', /* apply the move twice */
-	REVERSE_MODIFIER = '\'', /* apply the move backwards */
-	NO_MODIFIER = '\0' /* end of the string, no modifier here */
-} MoveModifier;
+	/**
+	 * Plain layer rotation
+	 */
+	NO_MODIFIER = 0x0,
 
+	/**
+	 * Rotate the layer in opposite direction
+	 */
+	REVERSE_MODIFIER = 0x1,
 
+	/**
+	 * Rotate the layer twice
+	 */
+	DOUBLE_MODIFIER = 0x2,
+
+	/**
+	 * Bit-mask to extract the modifier from a move
+	 */
+	MODIFIER_MASK = 0x3
+} Modifier;
 
 
 /**
- * All the valid moves we'll use to generate a scramble
- * Not all of them have the same odds to be picked
+ * The 9 layers composing the cube
  */
-static char const * valid_moves[] =
+typedef enum Layer
 {
-	/* base moves should twice the normal rate */
-	"L",  "R",  "U",  "D",  "F",  "B",
-	"L",  "R",  "U",  "D",  "F",  "B",
-	"L'", "R'", "U'", "D'", "F'", "B'",
-	"L'", "R'", "U'", "D'", "F'", "B'",
+	LEFT_LAYER = 0x4,
+	MIDDLE_LAYER = 0x8,
+	RIGHT_LAYER = 0x10,
 
-	/* center slices moves are lame, normal rate */
-	"M",  "E",  "S",
-	"M'", "E'", "S'",
+	TOP_LAYER = 0x20,
+	EQUATOR_LAYER = 0x40,
+	BOTTOM_LAYER = 0x80,
 
-	/* wide moves aren't natural, normal rate */
-	"L2", "R2", "U2", "D2", "F2", "B2",
-	"M2",  "E2",  "S2",
-};
-static int valid_moves_count = sizeof(valid_moves) / sizeof(* valid_moves);
+	FRONT_LAYER = 0x100,
+	STANDING_LAYER = 0x200,
+	BACK_LAYER = 0x400,
+
+	LAYER_MASK = 0x7FC
+} Layer;
+
+
+/**
+ * At least 16 bits
+ */
+typedef unsigned int Move;
+
 
 
 
 /**
- * Chooses a random valid move
+ * Picks a random layer
  *
- * @return char const * - the chosen valid move
+ * @return - a random layer
  */
-static char const * pick_random_move()
+static Layer random_layer(void)
 {
-	int index = rand() % valid_moves_count;
+	Layer layers[] =
+	{
+		LEFT_LAYER, MIDDLE_LAYER, RIGHT_LAYER,
+		TOP_LAYER, EQUATOR_LAYER, BOTTOM_LAYER,
+		FRONT_LAYER, STANDING_LAYER, BACK_LAYER,
+	};
 
-	return valid_moves[index];
+	return layers[rand() % 9];
 }
 
 
 /**
- * Checks if applying both moves is like doing nothing at all, eg. :
- * 	- 360° turn: <F2> <F2>
- *  - 0° turn: <L> <L'> or <U'> <U>
+ * Picks a random modifier
  *
- * @param first - the first move to check
- *
- * @param second - the second move to check
- *
- * @return int - 1 if both move cancels, 0 otherwise
+ * @return - a random modifier
  */
-static int moves_cancel_each_other(char const * first, char const * second)
+static Modifier random_modifier(void)
 {
-	if (first[0] != second[0])
-		return 0;
+	Modifier modifiers[] =
+	{
+		NO_MODIFIER, REVERSE_MODIFIER, DOUBLE_MODIFIER
+	};
 
-	if (first[1] == DOUBLE_MODIFIER && second[1] == DOUBLE_MODIFIER)
-		return 1;
-
-	if (first[1] == NO_MODIFIER && second[1] == REVERSE_MODIFIER)
-		return 1;
-
-	if (first[1] == REVERSE_MODIFIER && second[1] == NO_MODIFIER)
-		return 1;
-
-	return 0;
+	return modifiers[rand() % 3];
 }
 
 
 /**
- * Picks a random move which is guaranteed to be compatible with the
- * previous one either by combining them, or as a completely new move
+ * Generates a random move, without restriction
  *
- * @param previous_move - the move to pick a new one compatible with
- *
- * @return char * - the picked new move
+ * @return - a random move
  */
-static char const * pick_compatible_random_move(char const * previous_move)
+static Move generate_random_move(void)
 {
-	char const * new_move;
-
-	do new_move = pick_random_move();
-	while (moves_cancel_each_other(previous_move, new_move));
-
-	return new_move;
+	return random_layer() | random_modifier();
 }
 
 
 /**
- * Stores a copy of a [move] in an array, at the specified index
+ * Generates the first random move of the scramble
  *
- * @param moves - the array of string to write the move in
- *
- * @param move -  the move to write in the array, if it's
- * 	simple (eg. <F> or <R>), it's guaranteed to be long enough to be
- * 	extended at a later point (eg. into <F'> or <R2>)
- *
- * @param index - the index where to write in the array
- *
- * @return int - always returns 1
+ * @return - the first move of the scramble
  */
-static int add_move(char ** moves, char const * move, int index)
+static Move generate_first_random_move(void)
 {
-	moves[index] = malloc(MOVE_MAX_LENGTH + 1);
-	strcpy(moves[index], move);
-
-	return 1;
+	return generate_random_move();
 }
 
 
 /**
- * Checks if both moves can NOT be combined into a single one, ie. they don't
- * 	rotate the same slice
+ * Generates a random move, guaranteed to be on a different layer than the
+ * excluded one
  *
- * @param first - the first move to check
+ * @param excluded_layer - the layer to exclude
  *
- * @param second - the second move to check
- *
- * @return int - 1 if moves can NOT be combined, 0 if they can
+ * @return - a random move
  */
-static int moves_cannot_be_combined(char const * first, char const * second)
+static Move generate_next_random_move(Layer excluded_layer)
 {
-	return first[0] != second[0];
+	Move next_move;
+
+	do next_move = generate_random_move();
+	while ((next_move & LAYER_MASK) == excluded_layer);
+
+	return next_move;
 }
 
 
 /**
- * Applies a [modifier] on a [move] (eg. <'> or <2>), removing any previous one
+ * Generates every moves of the scramble
  *
- * @param move - the move to apply the modifier to
- *
- * @param symbol - the modifier to apply
- *
- * @return int - always returns 0
+ * @param moves - the buffer to insert generated moved to
+ * @param count - the number of moves to generate
  */
-static int apply_move_modifier(char * move, MoveModifier modifier)
+static void generate_random_moves(Move moves[], size_t count)
 {
-	move[1] = modifier;
-	move[2] = '\0';
+	size_t added_moves = 0;
 
-	return 0;
+	moves[added_moves++] = generate_first_random_move();
+
+	while (added_moves < count)
+	{
+		Layer previous_layer = moves[added_moves - 1] & LAYER_MASK;
+		moves[added_moves++] = generate_next_random_move(previous_layer);
+	}
 }
 
 
 /**
- * Applies the double move modifier (eg., <F> -> <F2>)
+ * Computes the length of the scramble string, including spacing between
+ * each move
  *
- * @param move - the move to apply the modifier on
+ * @param moves - the moves composing the scramble
+ * @param count - the number of moves in the scramble
  *
- * @return int - always returns 0
+ * @return - the length of the scramble string
  */
-static int apply_double_move_modifier(char * move)
+static size_t compute_scramble_string_length(Move const moves[], size_t count)
 {
-	return apply_move_modifier(move, DOUBLE_MODIFIER);
-}
-
-
-/**
- * Applies the reverse move modifier (eg., <R> -> <R'>)
- *
- * @param move - the move to apply the modifier on
- *
- * @return int - always returns 0
- */
-static int apply_reverse_move_modifier(char * move)
-{
-	return apply_move_modifier(move, REVERSE_MODIFIER);
-}
-
-
-/**
- * Removes the modifier on a [move] (eg. <'> or <2>)
- *
- * @param move - the move to remove the modifier from
- *
- * @return int - always returns 0
- */
-static int strip_move_modifier(char * move)
-{
-	move[1] = NO_MODIFIER;
-
-	return 0;
-}
-
-
-/**
- * Checks if both moves can be combined into a double one
- *
- * @param first - the first move to check the modifier
- *
- * @param second - the second move to check the modifier from
- *
- * @return int - 1 if moves can be combined into a double one, 0 otherwise
- */
-static int makes_double_move(char const * first, char const * second)
-{
-	if (first[1] == NO_MODIFIER && second[1] == NO_MODIFIER)
-		return 1;
-
-	if (first[1] == REVERSE_MODIFIER && second[1] == REVERSE_MODIFIER)
-		return 1;
-
-	return 0;
-}
-
-
-/**
- * Checks if both moves can be combined to a reverse one (they sum up to 270°)
- *
- * @param first - the first move to check the modifier
- *
- * @param second - the second move to check the modifier from
- *
- * @return int - 1 if moves can be combined into a reverse one, 0 otherwise
- */
-static int makes_reverse_move(char const * first, char const * second)
-{
-	if (first[1] == DOUBLE_MODIFIER && second[1] == NO_MODIFIER)
-		return 1;
-
-	if (first[1] == NO_MODIFIER && second[1] == DOUBLE_MODIFIER)
-		return 1;
-
-	return 0;
-}
-
-
-/**
- * Checks if the modifiers of both moves are opposite
- * A double move followed and the same reverse move turns the double move into
- * a simple one
- *
- * @param first - the first move to check the modifier from
- *
- * @param second - the second move to check the modifier from
- *
- * @return int - 1 if modifiers cancel each other, 0 otherwise
- */
-static int modifiers_cancel_each_other(char const * first, char const * second)
-{
-	if (first[1] == REVERSE_MODIFIER && second[1] == DOUBLE_MODIFIER)
-		return 1;
-
-	if (first[1] == DOUBLE_MODIFIER && second[1] == REVERSE_MODIFIER)
-		return 1;
-
-	return 0;
-}
-
-
-/**
- * Updates the previous move, based on the new one
- *
- * @param previous_move - the move to update
- *
- * @param new_move - the move that alters the one to update
- *
- * @return int - always returns 0
- */
-static int combine_moves(char * previous_move, char const * new_move)
-{
-	if (makes_double_move(previous_move, new_move))
-		return apply_double_move_modifier(previous_move);
-
-	if (modifiers_cancel_each_other(previous_move, new_move))
-		return strip_move_modifier(previous_move);
-
-	if (makes_reverse_move(previous_move, new_move))
-		return apply_reverse_move_modifier(previous_move);
-
-	/* can't be reached, if we handled cases well and moves are compatible */
-
-	return 0;
-}
-
-
-/**
- * Adds a new random move in an array, or combines it with the last one
- * 	if possible
- *
- * @param moves - the array to add a new move in
- *
- * @param moves_count - how many moves are currently in the array
- *
- * @return int - 1 if a new move was stored in the array, 0 if the last one
- * 	was simply updated (ie., last move and new one could be combined)
- */
-static int add_random_move(char ** moves, size_t moves_count)
-{
-	char * previous_move;
-	char const * new_move;
-
-	if (moves_count == 0)
-		return add_move(moves, pick_random_move(), 0);
-
-	previous_move = moves[moves_count - 1];
-	new_move = pick_compatible_random_move(previous_move);
-
-	if (moves_cannot_be_combined(previous_move, new_move))
-		return add_move(moves, new_move, moves_count);
-
-	return combine_moves(previous_move, new_move);
-}
-
-
-/**
- * Computes the length of the final scramble
- *
- * @param moves - the array of moves that will be in the scramble
- *
- * @param moves_count - the number of moves in the arry
- *
- * @return size_t - the length of the scramble, without NULL-terminating byte
- */
-static size_t compute_scramble_length(char ** moves, size_t moves_count)
-{
-	size_t spaces_count = moves_count - 1;
-	size_t moves_length = 0;
-
+	size_t string_length = 0;
 	size_t index;
-	for (index = 0; index < moves_count; index++)
-		moves_length += strlen(moves[index]);
 
-	return moves_length + spaces_count;
+	for (index = 0; index < count; index++)
+	{
+		/* 1 character for the layer */
+		string_length++;
+
+		/* 1 character for spacing between moves */
+		if (index > 0)
+			string_length++;
+
+		/* 1 character for the modifier, if any */
+		if ((moves[index] & MODIFIER_MASK) != NO_MODIFIER)
+			string_length++;
+	}
+
+	return string_length;
 }
 
 
 /**
- * Allocates the buffer to write the complete scramble, including the
- * 	NULL-terminating byte
+ * Returns the symbol of the given layer
  *
- * @param moves - array of moves that will be writen in the scramble
+ * @param layer - the layer to get the symbol for
  *
- * @param moves_count - how many moves are in the array
- *
- * @return char * - the allocated buffer, including room for the
- * 	NULL-terminating byte
+ * @return - the symbol to write the layer, or '?' if unknown layer
  */
-static char * allocate_scramble(char ** moves, size_t moves_count)
+static char layer_symbol(Layer layer)
 {
-	size_t scramble_length = compute_scramble_length(moves, moves_count);
-
-	return malloc(scramble_length + 1);
+	switch (layer)
+	{
+		case LEFT_LAYER: return 'L';
+		case MIDDLE_LAYER: return 'M';
+		case RIGHT_LAYER: return 'R';
+		case TOP_LAYER: return 'U';
+		case EQUATOR_LAYER: return 'E';
+		case BOTTOM_LAYER: return 'D';
+		case FRONT_LAYER: return 'F';
+		case STANDING_LAYER: return 'S';
+		case BACK_LAYER: return 'B';
+		default: return '?';
+	}
 }
 
 
 /**
- * Writes a [move] in a [scrumble], where the [scramble] is pointing to
+ * Returns the symbol of the given modifier
  *
- * @param scramble - the scramble to write the move to
+ * @param layer - the modifier to get the symbol for
  *
- * @param move - the move to write in the scramble
- *
- * @return size_t - the number of written bytes
+ * @return - the symbol to write the modifier, or '?' if unknown modifier,
+ * or '?' if NO_MODIFIER
  */
-static size_t write_move(char * scramble, char const * move)
+static char modifier_symbol(Modifier modifier)
 {
-	size_t move_length = strlen(move);
-	memcpy(scramble, move, move_length);
+	if (modifier == REVERSE_MODIFIER)
+		return '\'';
+	if (modifier == DOUBLE_MODIFIER)
+		return '2';
 
-	return move_length;
+	return '?';
 }
 
 
 /**
- * Concatenates all [moves] in the array, making a space-delimited scramble
- * 	sequence
+ * Writes a move at the beginning of the scramble string
  *
- * @param moves - the array of moves to concatenate
+ * @param move - the move to write
+ * @param scramble - the scramble string to write to
  *
- * @param moves_count - how many moves are in the array
- *
- * @return char * - the concatenated moves
+ * @return - the number of writen bytes
  */
-static char * concat_moves(char ** moves, size_t moves_count)
+static size_t write_move(Move move, char * scramble)
+{
+	size_t writen_bytes = 0;
+
+	* (scramble + writen_bytes++) = layer_symbol(move & LAYER_MASK);
+
+	if ((move & MODIFIER_MASK) != NO_MODIFIER)
+		* (scramble + writen_bytes++) = modifier_symbol(move & MODIFIER_MASK);
+
+	return writen_bytes;
+}
+
+
+/**
+ * Writes every move in the scramble string
+ *
+ * @param moves - the moves to write in the scramble string
+ * @param count - the number of moves to write
+ * @param scramble - the scramble string to write to, must be wide enough
+ * 	to contain layers, modifiers, spacing between moves and null-terminating
+ * 	byte
+ */
+static void write_scramble(Move const moves[], size_t count, char * scramble)
 {
 	size_t move_index;
-	char * scramble_position;
 
-	char * scramble = allocate_scramble(moves, moves_count);
+	scramble += write_move(moves[0], scramble);
+
+	for (move_index = 1; move_index < count; move_index++)
+	{
+		* scramble++ = ' ';
+		scramble += write_move(moves[move_index], scramble);
+	}
+
+	* scramble = '\0';
+}
+
+
+/**
+ * Creates the scramble string, based on the given moves
+ * The caller is in charge of the allocated memory
+ *
+ * @param moves - the moves composing the scramble
+ * @param count - the number of moves
+ *
+ * @return - the scramble string
+ */
+static char * create_scramble_string(Move const moves[], size_t count)
+{
+	size_t string_length = compute_scramble_string_length(moves, count);
+	char * scramble = malloc(string_length + 1);
+
 	if (scramble == NULL)
 		return NULL;
 
-	scramble_position = scramble;
-	scramble_position += write_move(scramble_position, moves[0]);
-
-	for (move_index = 1; move_index < moves_count; move_index++)
-	{
-		* scramble_position++ = ' ';
-		scramble_position += write_move(scramble_position, moves[move_index]);
-	}
-
-	* scramble_position = '\0';
+	write_scramble(moves, count, scramble);
 
 	return scramble;
 }
 
 
-/**
- * Generates an array of moves, guaranteed to contain no
- * 	repetitions (ie. <F F> or <R2 R'>)
- *
- * @param size - the number of moves to generate
- *
- * @return char ** - the generated moves
- */
-static char ** generate_moves(size_t size)
+char * rubiks_generate_scramble(size_t length)
 {
-	char ** moves;
-	size_t added_moves = 0;
-
-	moves = malloc(size * sizeof(* moves));
-	if (moves == NULL)
-		return NULL;
-
-	while (added_moves < size)
-		added_moves += add_random_move(moves, added_moves);
-
-	return moves;
-}
-
-
-/**
- * Deallocates a [move] and sets it to NULL
- *
- * @param move - the move to delete
- */
-static void delete_move(char ** move)
-{
-	free(* move);
-	* move = NULL;
-}
-
-
-/**
- * Deallocates the [moves] and the array itself, setting everything to NULL
- *
- * @param moves - the array of moves to delete
- *
- * @param size - the number of moves stored in the array
- */
-static void delete_moves(char *** moves, size_t size)
-{
-	size_t index;
-
-	for (index = 0; index < size; index++)
-		delete_move(& (* moves)[index]);
-
-	free(* moves);
-	* moves = NULL;
-}
-
-
-char * rubiks_generate_scramble(size_t size)
-{
+	Move * moves;
 	char * scramble;
-	char ** moves;
 
-	if (size == 0)
+	if (length == 0)
 		return NULL;
 
-	moves = generate_moves(size);
+	moves = malloc(sizeof(Move) * length);
 	if (moves == NULL)
 		return NULL;
 
-	scramble = concat_moves(moves, size);
-	delete_moves(& moves, size);
+	generate_random_moves(moves, length);
+	scramble = create_scramble_string(moves, length);
+
+	free(moves);
 
 	return scramble;
 }
