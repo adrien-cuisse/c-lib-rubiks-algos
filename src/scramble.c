@@ -34,23 +34,39 @@ typedef enum Modifier
 
 
 /**
- * The 9 layers composing the cube
+ * The 3 orthogonal axes the layers can rotate around
+ */
+typedef enum Axis
+{
+	X_AXIS = 0x4,
+	Y_AXIS = 0x8,
+	Z_AXIS = 0x10,
+
+	/**
+	 * Bit-mask to extract the axis from a move
+	 */
+	AXIS_MASK = 0x1C
+} Axis;
+
+
+/**
+ * The 9 layers composing the cube, the corresponding axis in embedded inside
  */
 typedef enum Layer
 {
-	LEFT_LAYER = 0x4,
-	MIDDLE_LAYER = 0x8,
-	RIGHT_LAYER = 0x10,
+	LEFT_LAYER = 0x20 | X_AXIS,
+	MIDDLE_LAYER = 0x40 | X_AXIS,
+	RIGHT_LAYER = 0x80 | X_AXIS,
 
-	TOP_LAYER = 0x20,
-	EQUATOR_LAYER = 0x40,
-	BOTTOM_LAYER = 0x80,
+	TOP_LAYER = 0x100 | Y_AXIS,
+	EQUATOR_LAYER = 0x200 | Y_AXIS,
+	BOTTOM_LAYER = 0x400 | Y_AXIS,
 
-	FRONT_LAYER = 0x100,
-	STANDING_LAYER = 0x200,
-	BACK_LAYER = 0x400,
+	FRONT_LAYER = 0x800 | Z_AXIS,
+	STANDING_LAYER = 0x1000 | Z_AXIS,
+	BACK_LAYER = 0x2000 | Z_AXIS,
 
-	LAYER_MASK = 0x7FC
+	LAYER_MASK = 0x3FE0 | AXIS_MASK
 } Layer;
 
 
@@ -119,19 +135,19 @@ static Move generate_first_random_move(void)
 
 
 /**
- * Generates a random move, guaranteed to be on a different layer than the
+ * Generates a random move, guaranteed to be on a different axis than the
  * excluded one
  *
- * @param excluded_layer - the layer to exclude
+ * @param excluded_axis - the axis to exclude
  *
  * @return - a random move
  */
-static Move generate_next_random_move(Layer excluded_layer)
+static Move generate_next_random_move(Axis excluded_axis)
 {
 	Move next_move;
 
 	do next_move = generate_random_move();
-	while ((next_move & LAYER_MASK) == excluded_layer);
+	while ((next_move & AXIS_MASK) == excluded_axis);
 
 	return next_move;
 }
@@ -151,8 +167,8 @@ static void generate_random_moves(Move moves[], size_t count)
 
 	while (added_moves < count)
 	{
-		Layer previous_layer = moves[added_moves - 1] & LAYER_MASK;
-		moves[added_moves++] = generate_next_random_move(previous_layer);
+		Axis previous_axis = moves[added_moves - 1] & AXIS_MASK;
+		moves[added_moves++] = generate_next_random_move(previous_axis);
 	}
 }
 

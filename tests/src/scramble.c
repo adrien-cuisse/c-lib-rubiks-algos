@@ -149,6 +149,26 @@ Test(scramble, scramble_is_only_made_of_valid_moves)
 }
 
 
+Test(scramble, doesnt_contain_consecutive_moves_on_same_axis)
+{
+	// given
+	size_t scramble_size = BIG_SIZE;
+
+	// when
+	char * scramble = rubiks_generate_scramble(scramble_size);
+
+	// then
+	char const * first_repeating_axis = find_repeated_axis(scramble);
+	cr_assert_null(
+		first_repeating_axis,
+		"repeating axis [%.6s...] found at position %ld in [%.*s...]",
+		first_repeating_axis,
+		first_repeating_axis - scramble,
+		(int) (first_repeating_axis - scramble + 10),
+		scramble);
+}
+
+
 
 
 #ifdef CHECK_HELPERS
