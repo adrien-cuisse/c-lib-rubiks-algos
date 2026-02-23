@@ -209,7 +209,7 @@ static void free_strings(struct criterion_test_params * crp)
 
 /**
  * Duplicates a string to be used in a parameterized test
- * Strings from libc's malloc() are unavailable in sub-processes because
+ * Strings from libc malloc() are unavailable in sub-processes because
  * 	of ASLR
  *
  * @param string - the string to duplicate
