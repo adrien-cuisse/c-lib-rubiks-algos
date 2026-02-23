@@ -229,54 +229,61 @@ static char * cr_strdup(char const * string)
 
 ParameterizedTestParameters(scramble, check_finds_layers_repetition)
 {
-	static char * params[19];
+	static struct scramble_repetition params[19];
 
 	/* only simple repetitions */
-	params[0] = cr_strdup("U U");
-	params[1] = cr_strdup("F F R");
-	params[2] = cr_strdup("L D D");
-	params[3] = cr_strdup("F U U L");
+	params[0] = (struct scramble_repetition) { cr_strdup("U U"), cr_strdup("U U") };
+	params[1] = (struct scramble_repetition) { cr_strdup("F F R"), cr_strdup("F F") };
+	params[2] = (struct scramble_repetition) { cr_strdup("L D D"), cr_strdup("D D") };
+	params[3] = (struct scramble_repetition) { cr_strdup("F U U L"), cr_strdup("U U") };
 
 	/* with quotes */
-	params[4] = cr_strdup("U' U'");
-	params[5] = cr_strdup("F' F' R");
-	params[6] = cr_strdup("L D' D'");
-	params[7] = cr_strdup("F U' U' L");
+	params[4] = (struct scramble_repetition) { cr_strdup("U' U'"), cr_strdup("U' U'") };
+	params[5] = (struct scramble_repetition) { cr_strdup("F' F' R"), cr_strdup("F' F'") };
+	params[6] = (struct scramble_repetition) { cr_strdup("L D' D'"), cr_strdup("D' D'") };
+	params[7] = (struct scramble_repetition) { cr_strdup("F U' U' L"), cr_strdup("U' U'") };
 
 	/* withs 2's */
-	params[8] = cr_strdup("U2 U2");
-	params[9] = cr_strdup("F2 F2 R");
-	params[10] = cr_strdup("L D2 D2");
-	params[11] = cr_strdup("F U2 U2 L");
+	params[8] = (struct scramble_repetition) { cr_strdup("U2 U2"), cr_strdup("U2 U2") };
+	params[9] = (struct scramble_repetition) { cr_strdup("F2 F2 R"), cr_strdup("F2 F2") };
+	params[10] = (struct scramble_repetition) { cr_strdup("L D2 D2"), cr_strdup("D2 D2") };
+	params[11] = (struct scramble_repetition) { cr_strdup("F U2 U2 L"), cr_strdup("U2 U2") };
 
 	/* combinations of simple and modifiers */
-	params[12] = cr_strdup("U U'");
-	params[13] = cr_strdup("R R2");
-	params[14] = cr_strdup("B' B");
-	params[15] = cr_strdup("D' D2");
-	params[16] = cr_strdup("L2 L");
-	params[17] = cr_strdup("F2 F'");
-	params[18] = cr_strdup("L' L B2");
-	params[18] = cr_strdup("D' R R'");
-	params[18] = cr_strdup("D' F2 F B");
+	params[12] = (struct scramble_repetition) { cr_strdup("U U'"), cr_strdup("U U'") };
+	params[13] = (struct scramble_repetition) { cr_strdup("R R2"), cr_strdup("R R2") };
+	params[14] = (struct scramble_repetition) { cr_strdup("B' B"), cr_strdup("B' B") };
+	params[15] = (struct scramble_repetition) { cr_strdup("D' D2"), cr_strdup("D' D2") };
+	params[16] = (struct scramble_repetition) { cr_strdup("L2 L"), cr_strdup("L2 L") };
+	params[17] = (struct scramble_repetition) { cr_strdup("F2 F'"), cr_strdup("F2 F'") };
+	params[18] = (struct scramble_repetition) { cr_strdup("L' L B2"), cr_strdup("L' L") };
+	params[18] = (struct scramble_repetition) { cr_strdup("D' R R'"), cr_strdup("R R'") };
+	params[18] = (struct scramble_repetition) { cr_strdup("D' F2 F B"), cr_strdup("F2 F") };
 
-	return cr_make_param_array(char *, params, 19, free_strings);
+	return cr_make_param_array(
+		struct scramble_repetition,
+		params,
+		19,
+		free_scramble_repetition_params);
 }
 
 
-ParameterizedTest(char ** bad_scramble, scramble, check_finds_layers_repetition)
+ParameterizedTest(
+	struct scramble_repetition * params,
+	scramble,
+	check_finds_layers_repetition)
 {
 	// given: a scramble with a repetition
 
 	// when: checking for repetitions
-	char const * repetition = find_repeated_layers(* bad_scramble);
+	char const * repetition = find_repeated_layers(params->scramble);
 
 	// then they should be found
 	cr_assert_not_null(
 		repetition,
 		"repetition not found, expected [%s] in [%s]",
-		repetition,
-		* bad_scramble);
+		params->repetition,
+		params->scramble);
 }
 
 
