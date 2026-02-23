@@ -193,22 +193,6 @@ static void free_scramble_repetition_params(struct criterion_test_params * crp)
 
 
 /**
- * Called by Criterion, if specified in cr_make_param_array()
- * Deallocates strings which were allocated for a parameterized test
- * The array itself is NOT deallocated
- *
- * @param crp - provided by Criterion
- */
-static void free_strings(struct criterion_test_params * crp)
-{
-	char ** strings = (char **) crp->params;
-
-	for (size_t index = 0; index < crp->length; index++)
-		cr_free(strings[index]);
-}
-
-
-/**
  * Duplicates a string to be used in a parameterized test
  * Strings from libc malloc() are unavailable in sub-processes because
  * 	of ASLR
@@ -289,64 +273,71 @@ ParameterizedTest(
 
 ParameterizedTestParameters(scramble, check_finds_invalid_move)
 {
-	static char * params[23];
+	static struct scramble_repetition params[23];
 
 	/* complete junk */
-	params[0] = cr_strdup("not even a scramble");
+	params[0] = (struct scramble_repetition) { cr_strdup("not even a scramble"), cr_strdup("not") };
 
 	/* invalid symbol */
-	params[1] = cr_strdup("a B L");
-	params[2] = cr_strdup("B' c L2");
-	params[3] = cr_strdup("L R g");
+	params[1] = (struct scramble_repetition) { cr_strdup("a B L"), cr_strdup("a") };
+	params[2] = (struct scramble_repetition) { cr_strdup("B' c L2"), cr_strdup("c") };
+	params[3] = (struct scramble_repetition) { cr_strdup("L R g"), cr_strdup("g") };
 
 	/* repeated move */
-	params[4] = cr_strdup("LL R U2");
-	params[5] = cr_strdup("L' B'B' R");
-	params[6] = cr_strdup("L' R2 F2F2");
+	params[4] = (struct scramble_repetition) { cr_strdup("LL R U2"), cr_strdup("LL") };
+	params[5] = (struct scramble_repetition) { cr_strdup("L' B'B' R"), cr_strdup("B'B'") };
+	params[6] = (struct scramble_repetition) { cr_strdup("L' R2 F2F2"), cr_strdup("F2F2") };
 
 	/* not properly delimited */
-	params[7] = cr_strdup("BD' U' R'");
-	params[8] = cr_strdup("L' FD' F'");
-	params[9] = cr_strdup("U' F' D'L2");
+	params[7] = (struct scramble_repetition) { cr_strdup("BD' U' R'"), cr_strdup("BD'") };
+	params[8] = (struct scramble_repetition) { cr_strdup("L' FD' F'"), cr_strdup("FD'") };
+	params[9] = (struct scramble_repetition) { cr_strdup("U' F' D'L2"), cr_strdup("D'L2") };
 
 	/* standalone modifiers */
-	params[10] = cr_strdup("' L F2");
-	params[11] = cr_strdup("2 D' L'");
-	params[12] = cr_strdup("U ' R");
-	params[13] = cr_strdup("R' 2 U");
-	params[14] = cr_strdup("F L' '");
-	params[15] = cr_strdup("B2 U2 2");
+	params[10] = (struct scramble_repetition) { cr_strdup("' L F2"), cr_strdup("'") };
+	params[11] = (struct scramble_repetition) { cr_strdup("2 D' L'"), cr_strdup("2") };
+	params[12] = (struct scramble_repetition) { cr_strdup("U ' R"), cr_strdup("'") };
+	params[13] = (struct scramble_repetition) { cr_strdup("R' 2 U"), cr_strdup("2") };
+	params[14] = (struct scramble_repetition) { cr_strdup("F L' '"), cr_strdup("'") };
+	params[15] = (struct scramble_repetition) { cr_strdup("B2 U2 2"), cr_strdup("2") };
 
 	/* several modifiers */
-	params[16] = cr_strdup("D'2 L2 F'");
-	params[17] = cr_strdup("F2 D2' U");
-	params[18] = cr_strdup("R' D R22");
-	params[19] = cr_strdup("R' D R''");
+	params[16] = (struct scramble_repetition) { cr_strdup("D'2 L2 F'"), cr_strdup("D'2") };
+	params[17] = (struct scramble_repetition) { cr_strdup("F2 D2' U"), cr_strdup("D2'") };
+	params[18] = (struct scramble_repetition) { cr_strdup("R' D R22"), cr_strdup("R22") };
+	params[19] = (struct scramble_repetition) { cr_strdup("R' D R''"), cr_strdup("R''") };
 
 	/* prefixed modifiers */
-	params[20] = cr_strdup("'R D' F");
-	params[21] = cr_strdup("U' ''L R'");
-	params[22] = cr_strdup("L2 U 2'B");
+	params[20] = (struct scramble_repetition) { cr_strdup("'R D' F"), cr_strdup("'R") };
+	params[21] = (struct scramble_repetition) { cr_strdup("U' ''L R'"), cr_strdup("''L") };
+	params[22] = (struct scramble_repetition) { cr_strdup("L2 U 2'B"), cr_strdup("2'B") };
 
-	return cr_make_param_array(char *, params, 23, free_strings);
+	return cr_make_param_array(
+		struct scramble_repetition,
+		params,
+		23,
+		free_scramble_repetition_params);
 }
 
 
-ParameterizedTest(char ** invalid_scramble, scramble, check_finds_invalid_move)
+ParameterizedTest(
+	struct scramble_repetition * params,
+	scramble,
+	check_finds_invalid_move)
 {
 	// given: a scramble with invalid moves
 
 	// when: trying to find them
 	char const * invalid_move = find_invalid_move(
-		* invalid_scramble,
+		params->scramble,
 		valid_moves);
 
 	// then they should be found
 	cr_assert_not_null(
 		invalid_move,
 		"invalid move not detected, expected [%s] in [%s]",
-		invalid_move,
-		* invalid_scramble);
+		params->repetition,
+		params->scramble);
 }
 
 
