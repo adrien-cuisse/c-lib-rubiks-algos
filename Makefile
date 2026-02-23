@@ -29,7 +29,7 @@ TESTS_UTILS_OBJ=$(subst $(TESTS_SRC_DIR),$(TESTS_OBJ_DIR),$(TESTS_UTILS_SRC:.c=.
 TESTS_SRC=$(shell find $(TESTS_SRC_DIR) -type f -name '*.c')
 TESTS_SRC:=$(filter-out $(TESTS_UTILS_SRC),$(TESTS_SRC))
 TESTS_OBJ=$(subst $(TESTS_SRC_DIR),$(TESTS_OBJ_DIR),$(TESTS_SRC:.c=.o))
-TESTS_CFLAGS=$(subst -ansi,,$(RELEASE_CFLAGS)) # Criterion is not C89 compliant
+TESTS_CFLAGS=$(subst -ansi,-std=c99,$(RELEASE_CFLAGS)) # Criterion is not C89 compliant
 TESTS_LDFLAGS=-lcriterion -L$(LIB_DIR)/ -l$(LIBRARY)
 TESTS_BINS=$(subst $(TESTS_SRC_DIR),$(TESTS_BIN_DIR),$(TESTS_SRC:.c=))
 
