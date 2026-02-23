@@ -99,7 +99,7 @@ ParameterizedTest(size_t * size, scramble, moves_are_space_separated)
 
 	// when: generating the scramble and checking separations
 	char * scramble = rubiks_generate_scramble(* size);
-	size_t actual_spaces_count = count_occurences(scramble, ' ');
+	size_t actual_spaces_count = count_occurrences(scramble, ' ');
 
 	// then: it should be 1 between each move
 	cr_assert_eq(

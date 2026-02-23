@@ -22,7 +22,7 @@ void init_random(void);
  *
  * @return size_t - how many times [needle] was found in [haystack]
  */
-size_t count_occurences(char const * haystack, char needle);
+size_t count_occurrences(char const * haystack, char needle);
 
 
 /**

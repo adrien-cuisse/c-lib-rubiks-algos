@@ -23,7 +23,7 @@ void init_random(void)
 }
 
 
-size_t count_occurences(char const * haystack, char needle)
+size_t count_occurrences(char const * haystack, char needle)
 {
 	size_t count = 0;
 
