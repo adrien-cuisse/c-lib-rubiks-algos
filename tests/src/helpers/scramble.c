@@ -9,6 +9,10 @@
 
 
 
+/**
+ * The axes the cube's layers can rotate around
+ * Values don't matter, we just need to group layers by axis
+ */
 typedef enum Axis
 {
 	AXIS_1, AXIS_2, AXIS_3
@@ -37,6 +41,13 @@ size_t count_occurrences(char const * haystack, char needle)
 }
 
 
+/**
+ * Returns the next move after the one pointed by [scramble]
+ *
+ * @param scramble - the scramble to get the next move from
+ *
+ * @return - the next move in the scramble, NULL if none
+ */
 static char const * get_next_move(char const * scramble)
 {
 	char const * next_move;
@@ -68,6 +79,13 @@ char const * find_repeated_moves(char const * scramble)
 }
 
 
+/**
+ * Returns the axis of the given [move]
+ *
+ * @param move - the move to get the axis from
+ *
+ * @return - the axis of the [move], or -1 if unknown move
+ */
 static Axis get_move_axis(char move)
 {
 	if ((move == 'L') || (move == 'M') || (move == 'R'))
@@ -79,7 +97,7 @@ static Axis get_move_axis(char move)
 
 	fprintf(stderr, "WARNING: get_move_axis(): unknown move %c\n", move);
 
-	return '?';
+	return -1;
 }
 
 
