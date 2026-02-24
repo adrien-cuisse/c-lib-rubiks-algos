@@ -7,13 +7,13 @@ A rubik's cube shared library writen in **C**
 
 ## 🧰 Features
 
-- scramble generation without repetitions (like [R R2] or [L' L])
+- scramble generation without axis repetitions (like [R L2] or [F' B])
+- optional wide moves in scrambles (eg., [U E] = [u])
 
 
 ## 🔮 Features to come
 
 - optional camera rotations in scrambles (eg., [U D'] = [E y])
-- wide moves in scrambles (eg., [U E] = [u])
 - solving
 
 
@@ -47,7 +47,7 @@ LD_LIBRARY_PATH=lib/ ./[your program]
 #include <stdlib.h>
 #include <time.h>
 
-#include "include/rubiks_moves.h"
+#include "include/rubiks_algos.h"
 
 int main(void)
 {
@@ -56,7 +56,7 @@ int main(void)
 	/* init the random seed */
 	srand(time(NULL));
 
-	scramble = rubiks_generate_scramble(16);
+	scramble = rubiks_generate_scramble(16, USE_WIDE_MOVES);
 	if (scramble == NULL)
 		return EXIT_FAILURE;
 
@@ -68,7 +68,8 @@ int main(void)
 
 ```
 ```bash
-gcc example.c -o example -Llib/ -lrubiks-algos && LD_LIBRARY_PATH=lib/ ./example
+gcc example.c -o example -Llib/ -lrubiks-algos
+LD_LIBRARY_PATH=lib/ ./example
 ```
 
 
