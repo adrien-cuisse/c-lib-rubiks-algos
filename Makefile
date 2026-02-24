@@ -87,6 +87,9 @@ $(LIB_DIR)/$(SHARED_LIB_REAL_NAME): $(RELEASE_OBJ)
 	cd $(LIB_DIR) && ln -sf $(SHARED_LIB_REAL_NAME) $(SHARED_LIB_SONAME)
 	cd $(LIB_DIR) && ln -sf $(SHARED_LIB_SONAME) $(SHARED_LIB_LINKER_NAME)
 
+# Don't delete intermediate objects when binaries are made
+.SECONDARY: $(RELEASE_OBJ) $(TESTS_UTILS_OBJ) $(TESTS_OBJ)
+
 .PHONY: clean
 clean:
 	rm -rf $(RELEASE_OBJ) $(TESTS_OBJ) $(TESTS_UTILS_OBJ)
