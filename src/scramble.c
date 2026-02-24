@@ -128,6 +128,8 @@ static Layer wide_layers[] =
 /**
  * Picks a random layer
  *
+ * @param layers_range - the flags regarding the layers to pick from
+ *
  * @return - a random layer
  */
 static Layer random_layer(RubiksScrambleOption layers_range)
@@ -153,6 +155,8 @@ static Modifier random_modifier(void)
 /**
  * Generates a random move, without restriction
  *
+ * @param layers_range - the flags regarding the layers to pick from
+ *
  * @return - a random move
  */
 static Move generate_random_move(RubiksScrambleOption layers_range)
@@ -163,6 +167,8 @@ static Move generate_random_move(RubiksScrambleOption layers_range)
 
 /**
  * Generates the first random move of the scramble
+ *
+ * @param layers_range - the flags regarding the layers to pick from
  *
  * @return - the first move of the scramble
  */
@@ -177,6 +183,7 @@ static Move generate_first_random_move(RubiksScrambleOption layers_range)
  * excluded one
  *
  * @param excluded_axis - the axis to exclude
+ * @param layers_range - the flags regarding the layers to pick from
  *
  * @return - a random move
  */
@@ -198,6 +205,7 @@ static Move generate_next_random_move(
  *
  * @param moves - the buffer to insert generated moved to
  * @param count - the number of moves to generate
+ * @param layers_range - the flags regarding the layers to pick from
  */
 static void generate_random_moves(
 	Move moves[],
@@ -285,7 +293,7 @@ static char layer_symbol(Layer layer)
 /**
  * Returns the symbol of the given modifier
  *
- * @param layer - the modifier to get the symbol for
+ * @param modifier - the modifier to get the symbol for
  *
  * @return - the symbol to write the modifier, or '?' if unknown modifier,
  * or '?' if NO_MODIFIER
