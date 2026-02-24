@@ -7,7 +7,7 @@ A rubik's cube shared library writen in **C**
 
 ## 🧰 Features
 
-- scramble generation without repetions (like [R R2] or [L' L])
+- scramble generation without repetitions (like [R R2] or [L' L])
 
 
 ## 🔮 Features to come
