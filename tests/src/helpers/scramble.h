@@ -61,6 +61,17 @@ char const * find_repeated_axis(char const * scramble);
 char * find_invalid_move(char * scramble, char const ** valid_moves);
 
 
+/**
+ * Duplicates a string to be used in a parameterized test
+ * Memory from libc malloc() is unavailable in sub-processes because of ASLR
+ *
+ * @param string - the string to duplicate
+ *
+ * @return - the copy of the string
+ */
+char * cr_strdup(char const * string);
+
+
 
 
 #endif /* RUBIKS_SCRAMBLE_HELPERS_HEADER */

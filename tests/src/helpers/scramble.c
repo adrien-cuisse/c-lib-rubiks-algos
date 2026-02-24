@@ -4,6 +4,8 @@
 #include <string.h>
 #include <time.h>
 
+#include <criterion/criterion.h>
+
 #include "scramble.h"
 
 
@@ -156,4 +158,22 @@ char * find_invalid_move(char * scramble, char const ** valid_moves)
 	}
 
 	return NULL;
+}
+
+
+/**
+ * Duplicates a string to be used in a parameterized test
+ * Memory from libc malloc() is unavailable in sub-processes because of ASLR
+ *
+ * @param string - the string to duplicate
+ *
+ * @return - the copy of the string
+ */
+char * cr_strdup(char const * string)
+{
+	char * copy = cr_malloc(strlen(string) + 1);
+	if (copy != NULL)
+		strcpy(copy, string);
+
+	return copy;
 }

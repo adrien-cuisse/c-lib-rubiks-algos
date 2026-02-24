@@ -7,6 +7,18 @@
 
 
 /**
+ * The masks to extract group of options
+ */
+typedef enum OptionMask
+{
+	/**
+	 * The mask to extract the range of moves to use during generation
+	 */
+	LAYERS_RANGE_MASK = 0x1
+} OptionMask;
+
+
+/**
  * The modifiers which can be applied to a move
  */
 typedef enum Modifier
@@ -66,6 +78,14 @@ typedef enum Layer
 	STANDING_LAYER = 0x1000 | Z_AXIS,
 	BACK_LAYER = 0x2000 | Z_AXIS,
 
+	/* If USE_WIDE_MOVES option is enabled */
+	LEFT_LAYERS = LEFT_LAYER | MIDDLE_LAYER,
+	RIGHT_LAYERS = RIGHT_LAYER | MIDDLE_LAYER,
+	TOP_LAYERS = TOP_LAYER | EQUATOR_LAYER,
+	BOTTOM_LAYERS = BOTTOM_LAYER | EQUATOR_LAYER,
+	FRONT_LAYERS = FRONT_LAYER | STANDING_LAYER,
+	BACK_LAYERS = BACK_LAYER | STANDING_LAYER,
+
 	LAYER_MASK = 0x3FE0 | AXIS_MASK
 } Layer;
 
@@ -83,16 +103,31 @@ typedef unsigned int Move;
  *
  * @return - a random layer
  */
-static Layer random_layer(void)
+static Layer random_layer(RubiksScrambleOption layers_range)
 {
-	Layer layers[] =
+	if (layers_range == USE_WIDE_MOVES)
 	{
-		LEFT_LAYER, MIDDLE_LAYER, RIGHT_LAYER,
-		TOP_LAYER, EQUATOR_LAYER, BOTTOM_LAYER,
-		FRONT_LAYER, STANDING_LAYER, BACK_LAYER,
-	};
-
-	return layers[rand() % 9];
+		Layer layers[] =
+		{
+			LEFT_LAYER, MIDDLE_LAYER, RIGHT_LAYER,
+			TOP_LAYER, EQUATOR_LAYER, BOTTOM_LAYER,
+			FRONT_LAYER, STANDING_LAYER, BACK_LAYER,
+			LEFT_LAYERS, RIGHT_LAYERS,
+			TOP_LAYERS, BOTTOM_LAYERS,
+			FRONT_LAYERS, BACK_LAYERS,
+		};
+		return layers[rand() % 15];
+	}
+	else
+	{
+		Layer layers[] =
+		{
+			LEFT_LAYER, MIDDLE_LAYER, RIGHT_LAYER,
+			TOP_LAYER, EQUATOR_LAYER, BOTTOM_LAYER,
+			FRONT_LAYER, STANDING_LAYER, BACK_LAYER,
+		};
+		return layers[rand() % 9];
+	}
 }
 
 
@@ -117,9 +152,9 @@ static Modifier random_modifier(void)
  *
  * @return - a random move
  */
-static Move generate_random_move(void)
+static Move generate_random_move(RubiksScrambleOption layers_range)
 {
-	return random_layer() | random_modifier();
+	return random_layer(layers_range) | random_modifier();
 }
 
 
@@ -128,9 +163,9 @@ static Move generate_random_move(void)
  *
  * @return - the first move of the scramble
  */
-static Move generate_first_random_move(void)
+static Move generate_first_random_move(RubiksScrambleOption layers_range)
 {
-	return generate_random_move();
+	return generate_random_move(layers_range);
 }
 
 
@@ -142,11 +177,13 @@ static Move generate_first_random_move(void)
  *
  * @return - a random move
  */
-static Move generate_next_random_move(Axis excluded_axis)
+static Move generate_next_random_move(
+	Axis excluded_axis,
+	RubiksScrambleOption layers_range)
 {
 	Move next_move;
 
-	do next_move = generate_random_move();
+	do next_move = generate_random_move(layers_range);
 	while ((next_move & AXIS_MASK) == excluded_axis);
 
 	return next_move;
@@ -159,16 +196,21 @@ static Move generate_next_random_move(Axis excluded_axis)
  * @param moves - the buffer to insert generated moved to
  * @param count - the number of moves to generate
  */
-static void generate_random_moves(Move moves[], size_t count)
+static void generate_random_moves(
+	Move moves[],
+	size_t count,
+	RubiksScrambleOption layers_range)
 {
 	size_t added_moves = 0;
 
-	moves[added_moves++] = generate_first_random_move();
+	moves[added_moves++] = generate_first_random_move(layers_range);
 
 	while (added_moves < count)
 	{
 		Axis previous_axis = moves[added_moves - 1] & AXIS_MASK;
-		moves[added_moves++] = generate_next_random_move(previous_axis);
+		moves[added_moves++] = generate_next_random_move(
+			previous_axis,
+			layers_range);
 	}
 }
 
@@ -225,6 +267,13 @@ static char layer_symbol(Layer layer)
 		case FRONT_LAYER: return 'F';
 		case STANDING_LAYER: return 'S';
 		case BACK_LAYER: return 'B';
+
+		case LEFT_LAYERS: return 'l';
+		case RIGHT_LAYERS: return 'r';
+		case TOP_LAYERS: return 'u';
+		case BOTTOM_LAYERS: return 'd';
+		case FRONT_LAYERS: return 'f';
+		case BACK_LAYERS: return 'b';
 		default: return '?';
 	}
 }
@@ -318,7 +367,7 @@ static char * create_scramble_string(Move const moves[], size_t count)
 }
 
 
-char * rubiks_generate_scramble(size_t length)
+char * rubiks_generate_scramble(size_t length, RubiksScrambleOption flags)
 {
 	Move * moves;
 	char * scramble;
@@ -330,7 +379,7 @@ char * rubiks_generate_scramble(size_t length)
 	if (moves == NULL)
 		return NULL;
 
-	generate_random_moves(moves, length);
+	generate_random_moves(moves, length, flags & LAYERS_RANGE_MASK);
 	scramble = create_scramble_string(moves, length);
 
 	free(moves);

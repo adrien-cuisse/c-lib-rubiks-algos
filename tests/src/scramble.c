@@ -26,15 +26,22 @@
 
 
 /**
- * Every symbol that may appear in a scramble sequence
+ * Every symbol that may appear in a scramble sequence with no options
  */
-static char valid_symbols[] = "LRUDFB EMS'2";
+char const * base_valid_symbols = "LRUDFB EMS '2";
+
+
+/**
+ * Every symbol that may appear in a scramble sequence with USE_WIDE_MOVES
+ * option enabled
+ */
+char const * wide_valid_symbols = "LRUDFB lrudfb EMS '2";
 
 
 /**
  * All possible moves for a scramble
  */
-static char const * valid_moves[] =
+char const * base_valid_moves[] =
 {
 	"L",  "R",  "U",  "D",  "F",  "B",  "E",  "M",  "S",
 	"L'", "R'", "U'", "D'", "F'", "B'", "E'", "M'", "S'",
@@ -43,6 +50,25 @@ static char const * valid_moves[] =
 	/* sentinel */
 	NULL
 };
+
+
+
+
+/**
+ * Parameterized tests arguments for layers range
+ */
+typedef struct ScrambleLayersRangeTestParams
+{
+	/**
+	 * The valid symbols set matching the flags
+	 */
+	char const * valid_moves;
+
+	/**
+	 * The layers range option
+	 */
+	RubiksScrambleOption flags;
+} ScrambleLayersRangeTestParams;
 
 
 
@@ -57,23 +83,40 @@ Test(scramble, returns_null_on_invalid_size)
 	size_t invalid_size = 0;
 
 	// when
-	char * scramble = rubiks_generate_scramble(invalid_size);
+	char * scramble = rubiks_generate_scramble(invalid_size, NO_OPTIONS);
 
 	// then
 	cr_assert_null(scramble, "scramble of length 0 makes no sense");
 }
 
 
-Test(scramble, scramble_is_only_made_of_valid_characters)
+ParameterizedTestParameters(scramble, scramble_is_only_made_of_valid_symbols)
+{
+	static ScrambleLayersRangeTestParams params[2];
+
+	/* Base layers only */
+	params[0] = (ScrambleLayersRangeTestParams) { cr_strdup(base_valid_symbols), NO_OPTIONS };
+
+	/* With wide moves */
+	params[1] = (ScrambleLayersRangeTestParams) { cr_strdup(wide_valid_symbols), USE_WIDE_MOVES };
+
+	return cr_make_param_array(ScrambleLayersRangeTestParams, params, 2);
+}
+
+
+ParameterizedTest(
+	ScrambleLayersRangeTestParams * params,
+	scramble,
+	scramble_is_only_made_of_valid_symbols)
 {
 	// given
 	size_t size = BIG_SIZE;
 
 	// given
-	char * scramble = rubiks_generate_scramble(size);
+	char const * scramble = rubiks_generate_scramble(size, params->flags);
 
 	// then
-	size_t valid_length = strspn(scramble, valid_symbols);
+	size_t valid_length = strspn(scramble, params->valid_moves);
 	cr_assert_eq(
 		valid_length,
 		strlen(scramble),
@@ -98,7 +141,7 @@ ParameterizedTest(size_t * size, scramble, moves_are_space_separated)
 	size_t expected_spaces_count = * size - 1;
 
 	// when: generating the scramble and checking separations
-	char * scramble = rubiks_generate_scramble(* size);
+	char * scramble = rubiks_generate_scramble(* size, NO_OPTIONS);
 	size_t actual_spaces_count = count_occurrences(scramble, ' ');
 
 	// then: it should be 1 between each move
@@ -117,7 +160,7 @@ Test(scramble, doesnt_contain_consecutive_moves_on_same_layer)
 	size_t big_size = BIG_SIZE;
 
 	// when
-	char * scramble = rubiks_generate_scramble(big_size);
+	char * scramble = rubiks_generate_scramble(big_size, NO_OPTIONS);
 	char const * repetition = find_repeated_layers(scramble);
 
 	// then
@@ -135,10 +178,10 @@ Test(scramble, scramble_is_only_made_of_valid_moves)
 	size_t big_size = BIG_SIZE;
 
 	// when
-	char * scramble = rubiks_generate_scramble(big_size);
+	char * scramble = rubiks_generate_scramble(big_size, NO_OPTIONS);
 	char * first_invalid_move = find_invalid_move(
 		scramble,
-		valid_moves);
+		base_valid_moves);
 
 	// then
 	cr_assert_null(
@@ -155,7 +198,7 @@ Test(scramble, doesnt_contain_consecutive_moves_on_same_axis)
 	size_t scramble_size = BIG_SIZE;
 
 	// when
-	char * scramble = rubiks_generate_scramble(scramble_size);
+	char * scramble = rubiks_generate_scramble(scramble_size, NO_OPTIONS);
 
 	// then
 	char const * first_repeating_axis = find_repeated_axis(scramble);
@@ -208,24 +251,6 @@ static void free_scramble_tests_params(struct criterion_test_params * crp)
 		cr_free(params[index].scramble);
 		cr_free(params[index].error_message_fragment);
 	}
-}
-
-
-/**
- * Duplicates a string to be used in a parameterized test
- * Memory from libc malloc() is unavailable in sub-processes because of ASLR
- *
- * @param string - the string to duplicate
- *
- * @return char * - the copy of the string
- */
-static char * cr_strdup(char const * string)
-{
-	char * copy = cr_malloc(strlen(string) + 1);
-	if (copy != NULL)
-		strcpy(copy, string);
-
-	return copy;
 }
 
 
