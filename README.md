@@ -9,6 +9,7 @@ A rubik's cube shared library writen in **C**
 
 - scramble generation without axis repetitions (like [R L2] or [F' B])
 - optional wide moves in scrambles (eg., [U E] = [u])
+- optional WCA notation
 
 
 ## 🔮 Features to come
@@ -56,7 +57,7 @@ int main(void)
 	/* init the random seed */
 	srand(time(NULL));
 
-	scramble = rubiks_generate_scramble(16, USE_WIDE_MOVES);
+	scramble = rubiks_generate_scramble(16, USE_WIDE_MOVES | USE_WCA_NOTATION);
 	if (scramble == NULL)
 		return EXIT_FAILURE;
 

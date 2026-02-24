@@ -28,7 +28,16 @@ typedef enum RubiksScrambleOption
 	 * 	- for top/bottom layers, equator layer is also rotated,
 	 * 	- for front/back layers, standing layer is also rotated
 	 */
-	USE_WIDE_MOVES = 1
+	USE_WIDE_MOVES = 1,
+
+	/**
+	 * By default, Singmaster notation is used, ie. wide moves are
+	 * lowercase (eg., [r])
+	 * With this option, a 'w' is appended after the layer, and before the
+	 * modifier (eg., [Rw])
+	 * Ignored when USE_WIDE_MOVES is not set
+	 */
+	USE_WCA_NOTATION = 2
 } RubiksScrambleOption;
 
 

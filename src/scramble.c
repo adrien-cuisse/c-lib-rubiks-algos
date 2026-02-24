@@ -14,7 +14,12 @@ typedef enum OptionMask
 	/**
 	 * The mask to extract the range of moves to use during generation
 	 */
-	LAYERS_RANGE_MASK = 0x1
+	LAYERS_RANGE_MASK = USE_WIDE_MOVES,
+
+	/**
+	 * The mask to enable WCA notation, requires USE_WIDE_MOVES
+	 */
+	WCA_NOTATION_MASK = USE_WIDE_MOVES | USE_WCA_NOTATION
 } OptionMask;
 
 
@@ -126,6 +131,38 @@ static Layer wide_layers[] =
 
 
 /**
+ * Counts the number of bits set to 1 in [number]
+ *
+ * @param number - the number to count bits from
+ *
+ * @return - the number of bits set
+ */
+static size_t count_bits_set(unsigned long number)
+{
+	size_t count;
+
+	for (count = 0; number > 0; count++)
+		number = number & (number - 1);
+
+	return count;
+}
+
+
+/**
+ * Checks whether or not the given layer bits contains several layer
+ *
+ * @param layer_bits - the layer bits to check
+ *
+ * @return - 1 if [layer_bits] contains more than 2 bits set, ie. at least
+ * 	2 for layers and 1 for embedded axis
+ */
+static int is_wide_move(Layer layer_bits)
+{
+	return count_bits_set(layer_bits) > 2;
+}
+
+
+/**
  * Picks a random layer
  *
  * @param layers_range - the flags regarding the layers to pick from
@@ -232,13 +269,18 @@ static void generate_random_moves(
  *
  * @param moves - the moves composing the scramble
  * @param count - the number of moves in the scramble
+ * @param wca_bits - the bits regarding the WCA_NOTATION_MASK
  *
  * @return - the length of the scramble string
  */
-static size_t compute_scramble_string_length(Move const moves[], size_t count)
+static size_t compute_scramble_string_length(
+	Move const moves[],
+	size_t count,
+	RubiksScrambleOption wca_bits)
 {
 	size_t string_length = 0;
 	size_t index;
+	Layer layer_bits;
 
 	for (index = 0; index < count; index++)
 	{
@@ -252,6 +294,11 @@ static size_t compute_scramble_string_length(Move const moves[], size_t count)
 		/* 1 character for the modifier, if any */
 		if ((moves[index] & MODIFIER_MASK) != NO_MODIFIER)
 			string_length++;
+
+		/* 1 character for the 'w' in WCA notation wide moves */
+		layer_bits = moves[index] & LAYER_MASK;
+		if ((wca_bits & WCA_NOTATION_MASK) && is_wide_move(layer_bits))
+			string_length++;
 	}
 
 	return string_length;
@@ -262,11 +309,27 @@ static size_t compute_scramble_string_length(Move const moves[], size_t count)
  * Returns the symbol of the given layer
  *
  * @param layer - the layer to get the symbol for
+ * @param wca_bits - the bits regarding the WCA_NOTATION_MASK
  *
  * @return - the symbol to write the layer, or '?' if unknown layer
  */
-static char layer_symbol(Layer layer)
+static char layer_symbol(Layer layer, RubiksScrambleOption wca_bits)
 {
+	if (wca_bits & USE_WCA_NOTATION)
+		switch (layer)
+		{
+			case LEFT_LAYER: case LEFT_LAYERS: return 'L';
+			case MIDDLE_LAYER: return 'M';
+			case RIGHT_LAYER: case RIGHT_LAYERS: return 'R';
+			case TOP_LAYER: case TOP_LAYERS: return 'U';
+			case EQUATOR_LAYER: return 'E';
+			case BOTTOM_LAYER: case BOTTOM_LAYERS: return 'D';
+			case FRONT_LAYER: case FRONT_LAYERS: return 'F';
+			case STANDING_LAYER: return 'S';
+			case BACK_LAYER: case BACK_LAYERS: return 'B';
+			default: return '?';
+		}
+
 	switch (layer)
 	{
 		case LEFT_LAYER: return 'L';
@@ -314,14 +377,22 @@ static char modifier_symbol(Modifier modifier)
  *
  * @param move - the move to write
  * @param scramble - the scramble string to write to
+ * @param wca_bits - the bits regarding the WCA_NOTATION_MASK
  *
  * @return - the number of writen bytes
  */
-static size_t write_move(Move move, char * scramble)
+static size_t write_move(
+	Move move,
+	char * scramble,
+	RubiksScrambleOption wca_bits)
 {
 	size_t writen_bytes = 0;
+	Layer layer_bits = move & LAYER_MASK;
 
-	* (scramble + writen_bytes++) = layer_symbol(move & LAYER_MASK);
+	* (scramble + writen_bytes++) = layer_symbol(layer_bits, wca_bits);
+
+	if ((wca_bits & USE_WCA_NOTATION) && (is_wide_move(layer_bits)))
+		* (scramble + writen_bytes++) = 'w';
 
 	if ((move & MODIFIER_MASK) != NO_MODIFIER)
 		* (scramble + writen_bytes++) = modifier_symbol(move & MODIFIER_MASK);
@@ -338,17 +409,22 @@ static size_t write_move(Move move, char * scramble)
  * @param scramble - the scramble string to write to, must be wide enough
  * 	to contain layers, modifiers, spacing between moves and null-terminating
  * 	byte
+ * @param wca_bits - the bits regarding the WCA_NOTATION_MASK
  */
-static void write_scramble(Move const moves[], size_t count, char * scramble)
+static void write_scramble(
+	Move const moves[],
+	size_t count,
+	char * scramble,
+	RubiksScrambleOption wca_bits)
 {
 	size_t move_index;
 
-	scramble += write_move(moves[0], scramble);
+	scramble += write_move(moves[0], scramble, wca_bits);
 
 	for (move_index = 1; move_index < count; move_index++)
 	{
 		* scramble++ = ' ';
-		scramble += write_move(moves[move_index], scramble);
+		scramble += write_move(moves[move_index], scramble, wca_bits);
 	}
 
 	* scramble = '\0';
@@ -361,18 +437,25 @@ static void write_scramble(Move const moves[], size_t count, char * scramble)
  *
  * @param moves - the moves composing the scramble
  * @param count - the number of moves
+ * @param wca_bits - the bits regarding the WCA_NOTATION_MASK
  *
  * @return - the scramble string
  */
-static char * create_scramble_string(Move const moves[], size_t count)
+static char * create_scramble_string(
+	Move const moves[],
+	size_t count,
+	RubiksScrambleOption wca_bits)
 {
-	size_t string_length = compute_scramble_string_length(moves, count);
+	size_t string_length = compute_scramble_string_length(
+		moves,
+		count,
+		wca_bits);
 	char * scramble = malloc(string_length + 1);
 
 	if (scramble == NULL)
 		return NULL;
 
-	write_scramble(moves, count, scramble);
+	write_scramble(moves, count, scramble, wca_bits);
 
 	return scramble;
 }
@@ -391,7 +474,10 @@ char * rubiks_generate_scramble(size_t length, RubiksScrambleOption flags)
 		return NULL;
 
 	generate_random_moves(moves, length, flags & LAYERS_RANGE_MASK);
-	scramble = create_scramble_string(moves, length);
+	scramble = create_scramble_string(
+		moves,
+		length,
+		flags & WCA_NOTATION_MASK);
 
 	free(moves);
 

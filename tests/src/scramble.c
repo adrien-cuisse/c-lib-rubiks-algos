@@ -28,20 +28,27 @@
 /**
  * Every symbol that may appear in a scramble sequence with no options
  */
-char const * base_valid_symbols = "LRUDFB EMS '2";
+static char const * base_valid_symbols = "LRUDFB EMS '2";
 
 
 /**
  * Every symbol that may appear in a scramble sequence with USE_WIDE_MOVES
- * option enabled
+ * option enabled, with default Singmaster notation
  */
-char const * wide_valid_symbols = "LRUDFB lrudfb EMS '2";
+static char const * singmaster_wide_valid_symbols = "LRUDFB lrudfb EMS '2";
+
+
+/**
+ * Every symbol that may appear in a scramble sequence with USE_WIDE_MOVES
+ * and USE_WCA_NOTATION options enabled
+ */
+static char const * wca_wide_valid_symbols = "LRUDFB w EMS '2";
 
 
 /**
  * All possible moves for a scramble
  */
-char const * base_valid_moves[] =
+static char const * base_valid_moves[] =
 {
 	"L",  "R",  "U",  "D",  "F",  "B",  "E",  "M",  "S",
 	"L'", "R'", "U'", "D'", "F'", "B'", "E'", "M'", "S'",
@@ -92,15 +99,18 @@ Test(scramble, returns_null_on_invalid_size)
 
 ParameterizedTestParameters(scramble, scramble_is_only_made_of_valid_symbols)
 {
-	static ScrambleLayersRangeTestParams params[2];
+	static ScrambleLayersRangeTestParams params[3];
 
 	/* Base layers only */
 	params[0] = (ScrambleLayersRangeTestParams) { cr_strdup(base_valid_symbols), NO_OPTIONS };
 
-	/* With wide moves */
-	params[1] = (ScrambleLayersRangeTestParams) { cr_strdup(wide_valid_symbols), USE_WIDE_MOVES };
+	/* With wide moves, Singmaster notation */
+	params[1] = (ScrambleLayersRangeTestParams) { cr_strdup(singmaster_wide_valid_symbols), USE_WIDE_MOVES };
 
-	return cr_make_param_array(ScrambleLayersRangeTestParams, params, 2);
+	/* With wide moves, Singmaster notation */
+	params[2] = (ScrambleLayersRangeTestParams) { cr_strdup(wca_wide_valid_symbols), USE_WIDE_MOVES | USE_WCA_NOTATION };
+
+	return cr_make_param_array(ScrambleLayersRangeTestParams, params, 3);
 }
 
 
