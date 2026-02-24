@@ -99,6 +99,33 @@ typedef unsigned int Move;
 
 
 /**
+ * Available layers when no options enabled
+ */
+static Layer base_layers[] =
+{
+	LEFT_LAYER, MIDDLE_LAYER, RIGHT_LAYER,
+	TOP_LAYER, EQUATOR_LAYER, BOTTOM_LAYER,
+	FRONT_LAYER, STANDING_LAYER, BACK_LAYER,
+};
+
+
+/**
+ * Available layers when USE_WIDE_MOVES enabled
+ */
+static Layer wide_layers[] =
+{
+	LEFT_LAYER, MIDDLE_LAYER, RIGHT_LAYER,
+	TOP_LAYER, EQUATOR_LAYER, BOTTOM_LAYER,
+	FRONT_LAYER, STANDING_LAYER, BACK_LAYER,
+	LEFT_LAYERS, RIGHT_LAYERS,
+	TOP_LAYERS, BOTTOM_LAYERS,
+	FRONT_LAYERS, BACK_LAYERS,
+};
+
+
+
+
+/**
  * Picks a random layer
  *
  * @return - a random layer
@@ -106,28 +133,9 @@ typedef unsigned int Move;
 static Layer random_layer(RubiksScrambleOption layers_range)
 {
 	if (layers_range == USE_WIDE_MOVES)
-	{
-		Layer layers[] =
-		{
-			LEFT_LAYER, MIDDLE_LAYER, RIGHT_LAYER,
-			TOP_LAYER, EQUATOR_LAYER, BOTTOM_LAYER,
-			FRONT_LAYER, STANDING_LAYER, BACK_LAYER,
-			LEFT_LAYERS, RIGHT_LAYERS,
-			TOP_LAYERS, BOTTOM_LAYERS,
-			FRONT_LAYERS, BACK_LAYERS,
-		};
-		return layers[rand() % 15];
-	}
-	else
-	{
-		Layer layers[] =
-		{
-			LEFT_LAYER, MIDDLE_LAYER, RIGHT_LAYER,
-			TOP_LAYER, EQUATOR_LAYER, BOTTOM_LAYER,
-			FRONT_LAYER, STANDING_LAYER, BACK_LAYER,
-		};
-		return layers[rand() % 9];
-	}
+		return wide_layers[rand() % 15];
+
+	return base_layers[rand() % 9];
 }
 
 
@@ -138,12 +146,7 @@ static Layer random_layer(RubiksScrambleOption layers_range)
  */
 static Modifier random_modifier(void)
 {
-	Modifier modifiers[] =
-	{
-		NO_MODIFIER, REVERSE_MODIFIER, DOUBLE_MODIFIER
-	};
-
-	return modifiers[rand() % 3];
+	return rand() % MODIFIER_MASK;
 }
 
 
