@@ -305,17 +305,11 @@ static void generate_random_wide_moves(Move moves[], size_t count)
  *
  * @param move - the move to compute the length for
  *
- * @param index - the index of the move
- *
  * @return - the number of bytes requires to write the given move
  */
-static size_t singmaster_notation_move_length(Move move, size_t index)
+static size_t singmaster_notation_move_length(Move move)
 {
 	size_t length = 1; /* 1 character for the layer */
-
-	/* 1 character for spacing between moves */
-	if (index > 0)
-		length++;
 
 	/* 1 character for the modifier, if any */
 	if ((move & MODIFIER_MASK) != NO_MODIFIER)
@@ -341,9 +335,9 @@ static size_t compute_singmaster_scramble_string_length(Move const moves[], size
 	size_t index;
 
 	for (index = 0; index < count; index++)
-		string_length += singmaster_notation_move_length(moves[index], index);
+		string_length += singmaster_notation_move_length(moves[index]);
 
-	return string_length;
+	return string_length + count - 1;
 }
 
 
@@ -364,14 +358,14 @@ static size_t compute_wca_scramble_string_length(Move const moves[], size_t coun
 
 	for (index = 0; index < count; index++)
 	{
-		string_length += singmaster_notation_move_length(moves[index], index);
+		string_length += singmaster_notation_move_length(moves[index]);
 
 		/* 1 character for the 'w' if wide move */
 		if (is_wide_move(moves[index]))
 			string_length++;
 	}
 
-	return string_length;
+	return string_length + count - 1;
 }
 
 
