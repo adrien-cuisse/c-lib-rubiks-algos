@@ -99,18 +99,21 @@ Test(scramble, returns_null_on_invalid_size)
 
 ParameterizedTestParameters(scramble, scramble_is_only_made_of_valid_symbols)
 {
-	static ScrambleLayersRangeTestParams params[3];
+	static ScrambleLayersRangeTestParams params[4];
 
-	/* Base layers only */
+	/* Base layers only, singmaster notation not relevant */
 	params[0] = (ScrambleLayersRangeTestParams) { cr_strdup(base_valid_symbols), NO_OPTIONS };
 
-	/* With wide moves, Singmaster notation */
-	params[1] = (ScrambleLayersRangeTestParams) { cr_strdup(singmaster_wide_valid_symbols), USE_WIDE_MOVES };
+	/* Base layers only, WCA notation not relevant */
+	params[1] = (ScrambleLayersRangeTestParams) { cr_strdup(base_valid_symbols), USE_WCA_NOTATION };
 
 	/* With wide moves, Singmaster notation */
-	params[2] = (ScrambleLayersRangeTestParams) { cr_strdup(wca_wide_valid_symbols), USE_WIDE_MOVES | USE_WCA_NOTATION };
+	params[2] = (ScrambleLayersRangeTestParams) { cr_strdup(singmaster_wide_valid_symbols), USE_WIDE_MOVES };
 
-	return cr_make_param_array(ScrambleLayersRangeTestParams, params, 3);
+	/* With wide moves, Singmaster notation */
+	params[3] = (ScrambleLayersRangeTestParams) { cr_strdup(wca_wide_valid_symbols), USE_WIDE_MOVES | USE_WCA_NOTATION };
+
+	return cr_make_param_array(ScrambleLayersRangeTestParams, params, 4);
 }
 
 

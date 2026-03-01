@@ -149,32 +149,37 @@ static size_t count_bits_set(unsigned long number)
 
 
 /**
- * Checks whether or not the given layer bits contains several layer
+ * Checks whether or not the given move is made of several layers
  *
- * @param layer_bits - the layer bits to check
+ * @param move - the move to check
  *
- * @return - 1 if [layer_bits] contains more than 2 bits set, ie. at least
- * 	2 for layers and 1 for embedded axis
+ * @return - 1 if the move contains at least 2 layers, 0 otherwise
  */
-static int is_wide_move(Layer layer_bits)
+static int is_wide_move(Move move)
 {
-	return count_bits_set(layer_bits) > 2;
+	return count_bits_set(move & LAYER_MASK) > 2;
 }
 
 
 /**
- * Picks a random layer
+ * Picks a random base layer, wide moves are excluded
  *
- * @param layers_range - the flags regarding the layers to pick from
+ * @return - a random base layer
+ */
+static Layer random_base_layer(void)
+{
+	return base_layers[rand() % 9];
+}
+
+
+/**
+ * Picks a random layer, wide moves are included
  *
  * @return - a random layer
  */
-static Layer random_layer(RubiksScrambleOption layers_range)
+static Layer random_extended_layer(void)
 {
-	if (layers_range == USE_WIDE_MOVES)
-		return wide_layers[rand() % 15];
-
-	return base_layers[rand() % 9];
+	return wide_layers[rand() % 15];
 }
 
 
@@ -190,47 +195,61 @@ static Modifier random_modifier(void)
 
 
 /**
- * Generates a random move, without restriction
+ * Picks a random base move, which may contain a modifier
  *
- * @param layers_range - the flags regarding the layers to pick from
- *
- * @return - a random move
+ * @return - a random base move
  */
-static Move generate_random_move(RubiksScrambleOption layers_range)
+static Move generate_random_base_move(void)
 {
-	return random_layer(layers_range) | random_modifier();
+	return random_base_layer() | random_modifier();
 }
 
 
 /**
- * Generates the first random move of the scramble
+ * Picks a random move, which may contain a modifier
  *
- * @param layers_range - the flags regarding the layers to pick from
- *
- * @return - the first move of the scramble
+ * @return - a random move, may be a wide one
  */
-static Move generate_first_random_move(RubiksScrambleOption layers_range)
+static Move generate_random_wide_move(void)
 {
-	return generate_random_move(layers_range);
+	return random_extended_layer() | random_modifier();
 }
 
 
 /**
- * Generates a random move, guaranteed to be on a different axis than the
- * excluded one
+ * Picks a random base move, without restriction
  *
- * @param excluded_axis - the axis to exclude
- * @param layers_range - the flags regarding the layers to pick from
- *
- * @return - a random move
+ * @return - a random base move
  */
-static Move generate_next_random_move(
-	Axis excluded_axis,
-	RubiksScrambleOption layers_range)
+static Move generate_first_random_base_move(void)
+{
+	return generate_random_base_move();
+}
+
+
+/**
+ * Picks a random move, without restriction
+ *
+ * @return - a random move, may be a wide one
+ */
+static Move generate_first_random_wide_move(void)
+{
+	return generate_random_wide_move();
+}
+
+
+/**
+ * Picks a base move on another axis than the given one
+ *
+ * @param excluded_axis - the axis to exclude from picking
+ *
+ * @return - a base move, guaranteed to be on a new axis
+ */
+static Move generate_next_random_base_move(Axis excluded_axis)
 {
 	Move next_move;
 
-	do next_move = generate_random_move(layers_range);
+	do next_move = generate_random_base_move();
 	while ((next_move & AXIS_MASK) == excluded_axis);
 
 	return next_move;
@@ -238,66 +257,134 @@ static Move generate_next_random_move(
 
 
 /**
- * Generates every moves of the scramble
+ * Picks a move on another axis than the given one, may be a wide move
+ *
+ * @param excluded_axis - the axis to exclude from picking
+ *
+ * @return - a move, guaranteed to be on a new axis
+ */
+static Move generate_next_random_wide_move(Axis excluded_axis)
+{
+	Move next_move;
+
+	do next_move = generate_random_wide_move();
+	while ((next_move & AXIS_MASK) == excluded_axis);
+
+	return next_move;
+}
+
+
+/**
+ * Generates every base move of the scramble
  *
  * @param moves - the buffer to insert generated moved to
+ *
  * @param count - the number of moves to generate
- * @param layers_range - the flags regarding the layers to pick from
  */
-static void generate_random_moves(
-	Move moves[],
-	size_t count,
-	RubiksScrambleOption layers_range)
+static void generate_random_base_moves(Move moves[], size_t count)
 {
 	size_t added_moves = 0;
 
-	moves[added_moves++] = generate_first_random_move(layers_range);
+	moves[added_moves++] = generate_first_random_base_move();
 
 	while (added_moves < count)
 	{
 		Axis previous_axis = moves[added_moves - 1] & AXIS_MASK;
-		moves[added_moves++] = generate_next_random_move(
-			previous_axis,
-			layers_range);
+		moves[added_moves++] = generate_next_random_base_move(previous_axis);
 	}
 }
 
 
 /**
- * Computes the length of the scramble string, including spacing between
- * each move
+ * Generates every move of the scramble, which may contain wide moves
+ *
+ * @param moves - the buffer to insert generated moved to
+ *
+ * @param count - the number of moves to generate
+ */
+static void generate_random_wide_moves(Move moves[], size_t count)
+{
+	size_t added_moves = 0;
+
+	moves[added_moves++] = generate_first_random_wide_move();
+
+	while (added_moves < count)
+	{
+		Axis previous_axis = moves[added_moves - 1] & AXIS_MASK;
+		moves[added_moves++] = generate_next_random_wide_move(previous_axis);
+	}
+}
+
+
+/**
+ * Computes the number of bytes requires to store the given move, using
+ * singmaster notation
+ *
+ * @param move - the move to compute the length for
+ *
+ * @param index - the index of the move
+ *
+ * @return - the number of bytes requires to write the given move
+ */
+static size_t singmaster_notation_move_length(Move move, size_t index)
+{
+	size_t length = 1; /* 1 character for the layer */
+
+	/* 1 character for spacing between moves */
+	if (index > 0)
+		length++;
+
+	/* 1 character for the modifier, if any */
+	if ((move & MODIFIER_MASK) != NO_MODIFIER)
+		length++;
+
+	return length;
+}
+
+
+/**
+ * Computes the length of the string required to store the scramble using
+ * singmaster notation
  *
  * @param moves - the moves composing the scramble
- * @param count - the number of moves in the scramble
- * @param wca_bits - the bits regarding the WCA_NOTATION_MASK
  *
- * @return - the length of the scramble string
+ * @param count - the number of moves in the scramble
+ *
+ * @return - the required length of the string, without NULL-terminating byte
  */
-static size_t compute_scramble_string_length(
-	Move const moves[],
-	size_t count,
-	RubiksScrambleOption wca_bits)
+static size_t compute_singmaster_scramble_string_length(Move const moves[], size_t count)
 {
 	size_t string_length = 0;
 	size_t index;
-	Layer layer_bits;
+
+	for (index = 0; index < count; index++)
+		string_length += singmaster_notation_move_length(moves[index], index);
+
+	return string_length;
+}
+
+
+/**
+ * Computes the length of the string required to store the scramble using
+ * WCA notation
+ *
+ * @param moves - the moves composing the scramble
+ *
+ * @param count - the number of moves in the scramble
+ *
+ * @return - the required length of the string, without NULL-terminating byte
+ */
+static size_t compute_wca_scramble_string_length(Move const moves[], size_t count)
+{
+	size_t string_length = 0;
+	size_t index;
 
 	for (index = 0; index < count; index++)
 	{
-		/* 1 character for the layer */
-		string_length++;
+		string_length += singmaster_notation_move_length(moves[index], index);
 
-		/* 1 character for spacing between moves */
-		if (index > 0)
-			string_length++;
-
-		/* 1 character for the modifier, if any */
-		if ((moves[index] & MODIFIER_MASK) != NO_MODIFIER)
-			string_length++;
-
-		/* 1 character for the 'w' in WCA notation wide moves */
-		layer_bits = moves[index] & LAYER_MASK;
-		if ((wca_bits & WCA_NOTATION_MASK) && is_wide_move(layer_bits))
+		/* 1 character for the 'w' if wide move */
+		if (is_wide_move(moves[index]))
 			string_length++;
 	}
 
@@ -306,30 +393,14 @@ static size_t compute_scramble_string_length(
 
 
 /**
- * Returns the symbol of the given layer
+ * Matches the base layer to a symbol
  *
  * @param layer - the layer to get the symbol for
- * @param wca_bits - the bits regarding the WCA_NOTATION_MASK
  *
- * @return - the symbol to write the layer, or '?' if unknown layer
+ * @return - the symbol of the layer
  */
-static char layer_symbol(Layer layer, RubiksScrambleOption wca_bits)
+static char base_layer_symbol(Layer layer)
 {
-	if (wca_bits & USE_WCA_NOTATION)
-		switch (layer)
-		{
-			case LEFT_LAYER: case LEFT_LAYERS: return 'L';
-			case MIDDLE_LAYER: return 'M';
-			case RIGHT_LAYER: case RIGHT_LAYERS: return 'R';
-			case TOP_LAYER: case TOP_LAYERS: return 'U';
-			case EQUATOR_LAYER: return 'E';
-			case BOTTOM_LAYER: case BOTTOM_LAYERS: return 'D';
-			case FRONT_LAYER: case FRONT_LAYERS: return 'F';
-			case STANDING_LAYER: return 'S';
-			case BACK_LAYER: case BACK_LAYERS: return 'B';
-			default: return '?';
-		}
-
 	switch (layer)
 	{
 		case LEFT_LAYER: return 'L';
@@ -341,14 +412,51 @@ static char layer_symbol(Layer layer, RubiksScrambleOption wca_bits)
 		case FRONT_LAYER: return 'F';
 		case STANDING_LAYER: return 'S';
 		case BACK_LAYER: return 'B';
+		default: return '?';
+	}
+}
 
+
+/**
+ * Matches the wide layer to a symbol in singmaster notation
+ *
+ * @param layer - the layer to get the symbol for
+ *
+ * @return - the symbol of the layer
+ */
+static char singmaster_layer_symbol(Layer layer)
+{
+	switch (layer)
+	{
 		case LEFT_LAYERS: return 'l';
 		case RIGHT_LAYERS: return 'r';
 		case TOP_LAYERS: return 'u';
 		case BOTTOM_LAYERS: return 'd';
 		case FRONT_LAYERS: return 'f';
 		case BACK_LAYERS: return 'b';
-		default: return '?';
+		default: return base_layer_symbol(layer);
+	}
+}
+
+
+/**
+ * Matches the wide layer to a symbol in WCA notation
+ *
+ * @param layer - the layer to get the symbol for
+ *
+ * @return - the symbol of the layer
+ */
+static char wca_layer_symbol(Layer layer)
+{
+	switch (layer)
+	{
+		case LEFT_LAYERS: return 'L';
+		case RIGHT_LAYERS: return 'R';
+		case TOP_LAYERS: return 'U';
+		case BOTTOM_LAYERS: return 'D';
+		case FRONT_LAYERS: return 'F';
+		case BACK_LAYERS: return 'B';
+		default: return base_layer_symbol(layer);
 	}
 }
 
@@ -373,25 +481,45 @@ static char modifier_symbol(Modifier modifier)
 
 
 /**
- * Writes a move at the beginning of the scramble string
+ * Writes a move at the beginning of the scramble string, using singmaster
+ * notation
  *
  * @param move - the move to write
+ *
  * @param scramble - the scramble string to write to
- * @param wca_bits - the bits regarding the WCA_NOTATION_MASK
  *
  * @return - the number of writen bytes
  */
-static size_t write_move(
-	Move move,
-	char * scramble,
-	RubiksScrambleOption wca_bits)
+static size_t write_singmaster_move(Move move, char * scramble)
 {
 	size_t writen_bytes = 0;
 	Layer layer_bits = move & LAYER_MASK;
 
-	* (scramble + writen_bytes++) = layer_symbol(layer_bits, wca_bits);
+	* (scramble + writen_bytes++) = singmaster_layer_symbol(layer_bits);
 
-	if ((wca_bits & USE_WCA_NOTATION) && (is_wide_move(layer_bits)))
+	if ((move & MODIFIER_MASK) != NO_MODIFIER)
+		* (scramble + writen_bytes++) = modifier_symbol(move & MODIFIER_MASK);
+
+	return writen_bytes;
+}
+
+
+/**
+ * Writes a move at the beginning of the scramble string, using WCA notation
+ *
+ * @param move - the move to write
+ *
+ * @param scramble - the scramble string to write to
+ *
+ * @return - the number of writen bytes
+ */
+static size_t write_wca_move(Move move, char * scramble)
+{
+	size_t writen_bytes = 0;
+
+	* (scramble + writen_bytes++) = wca_layer_symbol(move & LAYER_MASK);
+
+	if ((is_wide_move(move)))
 		* (scramble + writen_bytes++) = 'w';
 
 	if ((move & MODIFIER_MASK) != NO_MODIFIER)
@@ -402,29 +530,24 @@ static size_t write_move(
 
 
 /**
- * Writes every move in the scramble string
+ * Writes the scramble in the given string, using singmaster notation
  *
- * @param moves - the moves to write in the scramble string
- * @param count - the number of moves to write
- * @param scramble - the scramble string to write to, must be wide enough
- * 	to contain layers, modifiers, spacing between moves and null-terminating
- * 	byte
- * @param wca_bits - the bits regarding the WCA_NOTATION_MASK
+ * @param moves - the moves composing the scramble
+ *
+ * @param count - the number of moves in the scramble
+ *
+ * @param scramble - the writen scramble
  */
-static void write_scramble(
-	Move const moves[],
-	size_t count,
-	char * scramble,
-	RubiksScrambleOption wca_bits)
+static void write_singmaster_scramble(Move const moves[], size_t count, char * scramble)
 {
 	size_t move_index;
 
-	scramble += write_move(moves[0], scramble, wca_bits);
+	scramble += write_singmaster_move(moves[0], scramble);
 
 	for (move_index = 1; move_index < count; move_index++)
 	{
 		* scramble++ = ' ';
-		scramble += write_move(moves[move_index], scramble, wca_bits);
+		scramble += write_singmaster_move(moves[move_index], scramble);
 	}
 
 	* scramble = '\0';
@@ -432,30 +555,73 @@ static void write_scramble(
 
 
 /**
- * Creates the scramble string, based on the given moves
- * The caller is in charge of the allocated memory
+ * Writes the scramble in the given string, using WCA notation
  *
  * @param moves - the moves composing the scramble
- * @param count - the number of moves
- * @param wca_bits - the bits regarding the WCA_NOTATION_MASK
  *
- * @return - the scramble string
+ * @param count - the number of moves in the scramble
+ *
+ * @param scramble - the writen scramble
  */
-static char * create_scramble_string(
-	Move const moves[],
-	size_t count,
-	RubiksScrambleOption wca_bits)
+static void write_wca_scramble(Move const moves[], size_t count, char * scramble)
 {
-	size_t string_length = compute_scramble_string_length(
-		moves,
-		count,
-		wca_bits);
+	size_t move_index;
+
+	scramble += write_wca_move(moves[0], scramble);
+
+	for (move_index = 1; move_index < count; move_index++)
+	{
+		* scramble++ = ' ';
+		scramble += write_wca_move(moves[move_index], scramble);
+	}
+
+	* scramble = '\0';
+}
+
+
+/**
+ * Creates a scramble string from the given moves, using singmaster notation
+ * The caller is in charge of the memory
+ *
+ * @param moves - the moves composing the scramble
+ *
+ * @param count - the number of moves in the scramble
+ *
+ * @return - the created scramble
+ */
+static char * create_singmaster_scramble_string(Move const moves[], size_t count)
+{
+	size_t string_length = compute_singmaster_scramble_string_length(moves, count);
 	char * scramble = malloc(string_length + 1);
 
 	if (scramble == NULL)
 		return NULL;
 
-	write_scramble(moves, count, scramble, wca_bits);
+	write_singmaster_scramble(moves, count, scramble);
+
+	return scramble;
+}
+
+
+/**
+ * Creates a scramble string from the given moves, using WCA notation
+ * The caller is in charge of the memory
+ *
+ * @param moves - the moves composing the scramble
+ *
+ * @param count - the number of moves in the scramble
+ *
+ * @return - the created scramble
+ */
+static char * create_wca_scramble_string(Move const moves[], size_t count)
+{
+	size_t string_length = compute_wca_scramble_string_length(moves, count);
+	char * scramble = malloc(string_length + 1);
+
+	if (scramble == NULL)
+		return NULL;
+
+	write_wca_scramble(moves, count, scramble);
 
 	return scramble;
 }
@@ -473,11 +639,15 @@ char * rubiks_generate_scramble(size_t length, RubiksScrambleOption flags)
 	if (moves == NULL)
 		return NULL;
 
-	generate_random_moves(moves, length, flags & LAYERS_RANGE_MASK);
-	scramble = create_scramble_string(
-		moves,
-		length,
-		flags & WCA_NOTATION_MASK);
+	if (flags & USE_WIDE_MOVES)
+		generate_random_wide_moves(moves, length);
+	else
+		generate_random_base_moves(moves, length);
+
+	if (flags & USE_WCA_NOTATION)
+		scramble = create_wca_scramble_string(moves, length);
+	else
+		scramble = create_singmaster_scramble_string(moves, length);
 
 	free(moves);
 

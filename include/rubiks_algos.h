@@ -23,19 +23,20 @@ typedef enum RubiksScrambleOption
 	NO_OPTIONS = 0,
 
 	/**
-	 * Wide moves applies on 2 slayers instead of 1:
-	 * 	- for left/right layers, middle layer is also rotated,
-	 * 	- for top/bottom layers, equator layer is also rotated,
-	 * 	- for front/back layers, standing layer is also rotated
+	 * Wide moves apply on 2 layers instead of 1:
+	 * 	- for left/right layer, middle layer is also rotated,
+	 * 	- for top/bottom layer, equator layer is also rotated,
+	 * 	- for front/back layer, standing layer is also rotated
+	 * 	If USE_WCA_NOTATION is not set, defaults to singmaster notation,
+	 * 	which means wide moves are lowercase layers,
+	 * 	eg., [r'] = right layers anticlockwise
 	 */
 	USE_WIDE_MOVES = 1,
 
 	/**
-	 * By default, Singmaster notation is used, ie. wide moves are
-	 * lowercase (eg., [r])
-	 * With this option, a 'w' is appended after the layer, and before the
-	 * modifier (eg., [Rw])
-	 * Ignored when USE_WIDE_MOVES is not set
+	 * A 'w' is appended between the layer and the modifier to indicate
+	 * a wide move, eg., [Rw'] = right layers anticlockwise
+	 * Has no effect when USE_WIDE_MOVES is not set
 	 */
 	USE_WCA_NOTATION = 2
 } RubiksScrambleOption;
@@ -44,8 +45,9 @@ typedef enum RubiksScrambleOption
 
 
 /**
- * Generates a scramble sequence, guaranteed to contain no
- * 	repetitions (ie. <F F> or <R2 R'>)
+ * Generates a scramble sequence, guaranteed to contain no more than 1 move
+ * per axis
+ * The caller is in charge of the memory
  *
  * @param length - the length of the sequence to generate
  *
