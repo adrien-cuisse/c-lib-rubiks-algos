@@ -7,23 +7,6 @@
 
 
 /**
- * The masks to extract group of options
- */
-typedef enum OptionMask
-{
-	/**
-	 * The mask to extract the range of moves to use during generation
-	 */
-	LAYERS_RANGE_MASK = USE_WIDE_MOVES,
-
-	/**
-	 * The mask to enable WCA notation, requires USE_WIDE_MOVES
-	 */
-	WCA_NOTATION_MASK = USE_WIDE_MOVES | USE_WCA_NOTATION
-} OptionMask;
-
-
-/**
  * The modifiers which can be applied to a move
  */
 typedef enum Modifier
