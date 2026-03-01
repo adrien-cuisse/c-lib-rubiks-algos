@@ -120,7 +120,7 @@ static enum rca_layer wide_layers[] =
  *
  * @return - the number of bits set
  */
-static size_t count_bits_set(unsigned long number)
+static size_t rca_count_bits_set(unsigned long number)
 {
 	size_t count;
 
@@ -138,9 +138,9 @@ static size_t count_bits_set(unsigned long number)
  *
  * @return - 1 if the move contains at least 2 layers, 0 otherwise
  */
-static int is_wide_move(rca_move move)
+static int rca_is_wide_move(rca_move move)
 {
-	return count_bits_set(move & LAYER_MASK) > 2;
+	return rca_count_bits_set(move & LAYER_MASK) > 2;
 }
 
 
@@ -149,7 +149,7 @@ static int is_wide_move(rca_move move)
  *
  * @return - a random base layer
  */
-static enum rca_layer random_base_layer(void)
+static enum rca_layer rca_random_base_layer(void)
 {
 	return base_layers[rand() % 9];
 }
@@ -160,7 +160,7 @@ static enum rca_layer random_base_layer(void)
  *
  * @return - a random layer
  */
-static enum rca_layer random_extended_layer(void)
+static enum rca_layer rca_random_extended_layer(void)
 {
 	return wide_layers[rand() % 15];
 }
@@ -171,7 +171,7 @@ static enum rca_layer random_extended_layer(void)
  *
  * @return - a random modifier
  */
-static enum rca_modifier random_modifier(void)
+static enum rca_modifier rca_random_modifier(void)
 {
 	return rand() % MODIFIER_MASK;
 }
@@ -182,9 +182,9 @@ static enum rca_modifier random_modifier(void)
  *
  * @return - a random base move
  */
-static rca_move generate_random_base_move(void)
+static rca_move rca_generate_random_base_move(void)
 {
-	return random_base_layer() | random_modifier();
+	return rca_random_base_layer() | rca_random_modifier();
 }
 
 
@@ -193,9 +193,9 @@ static rca_move generate_random_base_move(void)
  *
  * @return - a random move, may be a wide one
  */
-static rca_move generate_random_wide_move(void)
+static rca_move rca_generate_random_wide_move(void)
 {
-	return random_extended_layer() | random_modifier();
+	return rca_random_extended_layer() | rca_random_modifier();
 }
 
 
@@ -204,9 +204,9 @@ static rca_move generate_random_wide_move(void)
  *
  * @return - a random base move
  */
-static rca_move generate_first_random_base_move(void)
+static rca_move rca_generate_first_random_base_move(void)
 {
-	return generate_random_base_move();
+	return rca_generate_random_base_move();
 }
 
 
@@ -215,9 +215,9 @@ static rca_move generate_first_random_base_move(void)
  *
  * @return - a random move, may be a wide one
  */
-static rca_move generate_first_random_wide_move(void)
+static rca_move rca_generate_first_random_wide_move(void)
 {
-	return generate_random_wide_move();
+	return rca_generate_random_wide_move();
 }
 
 
@@ -228,11 +228,11 @@ static rca_move generate_first_random_wide_move(void)
  *
  * @return - a base move, guaranteed to be on a new axis
  */
-static rca_move generate_next_random_base_move(enum rca_axis excluded_axis)
+static rca_move rca_generate_next_random_base_move(enum rca_axis excluded_axis)
 {
 	rca_move next_move;
 
-	do next_move = generate_random_base_move();
+	do next_move = rca_generate_random_base_move();
 	while ((next_move & AXIS_MASK) == excluded_axis);
 
 	return next_move;
@@ -246,11 +246,11 @@ static rca_move generate_next_random_base_move(enum rca_axis excluded_axis)
  *
  * @return - a move, guaranteed to be on a new axis
  */
-static rca_move generate_next_random_wide_move(enum rca_axis excluded_axis)
+static rca_move rca_generate_next_random_wide_move(enum rca_axis excluded_axis)
 {
 	rca_move next_move;
 
-	do next_move = generate_random_wide_move();
+	do next_move = rca_generate_random_wide_move();
 	while ((next_move & AXIS_MASK) == excluded_axis);
 
 	return next_move;
@@ -264,16 +264,16 @@ static rca_move generate_next_random_wide_move(enum rca_axis excluded_axis)
  *
  * @param count - the number of moves to generate
  */
-static void generate_random_base_moves(rca_move moves[], size_t count)
+static void rca_generate_random_base_moves(rca_move moves[], size_t count)
 {
 	size_t added_moves = 0;
 
-	moves[added_moves++] = generate_first_random_base_move();
+	moves[added_moves++] = rca_generate_first_random_base_move();
 
 	while (added_moves < count)
 	{
 		enum rca_axis previous_axis = moves[added_moves - 1] & AXIS_MASK;
-		moves[added_moves++] = generate_next_random_base_move(previous_axis);
+		moves[added_moves++] = rca_generate_next_random_base_move(previous_axis);
 	}
 }
 
@@ -285,16 +285,16 @@ static void generate_random_base_moves(rca_move moves[], size_t count)
  *
  * @param count - the number of moves to generate
  */
-static void generate_random_wide_moves(rca_move moves[], size_t count)
+static void rca_generate_random_wide_moves(rca_move moves[], size_t count)
 {
 	size_t added_moves = 0;
 
-	moves[added_moves++] = generate_first_random_wide_move();
+	moves[added_moves++] = rca_generate_first_random_wide_move();
 
 	while (added_moves < count)
 	{
 		enum rca_axis previous_axis = moves[added_moves - 1] & AXIS_MASK;
-		moves[added_moves++] = generate_next_random_wide_move(previous_axis);
+		moves[added_moves++] = rca_generate_next_random_wide_move(previous_axis);
 	}
 }
 
@@ -307,7 +307,7 @@ static void generate_random_wide_moves(rca_move moves[], size_t count)
  *
  * @return - the number of bytes requires to write the given move
  */
-static size_t singmaster_notation_move_length(rca_move move)
+static size_t rca_singmaster_notation_move_length(rca_move move)
 {
 	size_t length = 1; /* 1 character for the layer */
 
@@ -329,13 +329,13 @@ static size_t singmaster_notation_move_length(rca_move move)
  *
  * @return - the required length of the string, without NULL-terminating byte
  */
-static size_t compute_singmaster_scramble_string_length(rca_move const moves[], size_t count)
+static size_t rca_compute_singmaster_scramble_string_length(rca_move const moves[], size_t count)
 {
 	size_t string_length = 0;
 	size_t index;
 
 	for (index = 0; index < count; index++)
-		string_length += singmaster_notation_move_length(moves[index]);
+		string_length += rca_singmaster_notation_move_length(moves[index]);
 
 	return string_length + count - 1;
 }
@@ -351,17 +351,17 @@ static size_t compute_singmaster_scramble_string_length(rca_move const moves[], 
  *
  * @return - the required length of the string, without NULL-terminating byte
  */
-static size_t compute_wca_scramble_string_length(rca_move const moves[], size_t count)
+static size_t rca_compute_wca_scramble_string_length(rca_move const moves[], size_t count)
 {
 	size_t string_length = 0;
 	size_t index;
 
 	for (index = 0; index < count; index++)
 	{
-		string_length += singmaster_notation_move_length(moves[index]);
+		string_length += rca_singmaster_notation_move_length(moves[index]);
 
 		/* 1 character for the 'w' if wide move */
-		if (is_wide_move(moves[index]))
+		if (rca_is_wide_move(moves[index]))
 			string_length++;
 	}
 
@@ -376,7 +376,7 @@ static size_t compute_wca_scramble_string_length(rca_move const moves[], size_t 
  *
  * @return - the symbol of the layer
  */
-static char base_layer_symbol(enum rca_layer layer)
+static char rca_base_layer_symbol(enum rca_layer layer)
 {
 	switch (layer)
 	{
@@ -401,7 +401,7 @@ static char base_layer_symbol(enum rca_layer layer)
  *
  * @return - the symbol of the layer
  */
-static char singmaster_layer_symbol(enum rca_layer layer)
+static char rca_singmaster_layer_symbol(enum rca_layer layer)
 {
 	switch (layer)
 	{
@@ -411,7 +411,7 @@ static char singmaster_layer_symbol(enum rca_layer layer)
 		case BOTTOM_LAYERS: return 'd';
 		case FRONT_LAYERS: return 'f';
 		case BACK_LAYERS: return 'b';
-		default: return base_layer_symbol(layer);
+		default: return rca_base_layer_symbol(layer);
 	}
 }
 
@@ -423,7 +423,7 @@ static char singmaster_layer_symbol(enum rca_layer layer)
  *
  * @return - the symbol of the layer
  */
-static char wca_layer_symbol(enum rca_layer layer)
+static char rca_wca_layer_symbol(enum rca_layer layer)
 {
 	switch (layer)
 	{
@@ -433,7 +433,7 @@ static char wca_layer_symbol(enum rca_layer layer)
 		case BOTTOM_LAYERS: return 'D';
 		case FRONT_LAYERS: return 'F';
 		case BACK_LAYERS: return 'B';
-		default: return base_layer_symbol(layer);
+		default: return rca_base_layer_symbol(layer);
 	}
 }
 
@@ -446,7 +446,7 @@ static char wca_layer_symbol(enum rca_layer layer)
  * @return - the symbol to write the modifier, or '?' if unknown modifier,
  * or '?' if NO_MODIFIER
  */
-static char modifier_symbol(enum rca_modifier modifier)
+static char rca_modifier_symbol(enum rca_modifier modifier)
 {
 	if (modifier == REVERSE_MODIFIER)
 		return '\'';
@@ -467,15 +467,15 @@ static char modifier_symbol(enum rca_modifier modifier)
  *
  * @return - the number of writen bytes
  */
-static size_t write_singmaster_move(rca_move move, char * scramble)
+static size_t rca_write_singmaster_move(rca_move move, char * scramble)
 {
 	size_t writen_bytes = 0;
 	enum rca_layer layer_bits = move & LAYER_MASK;
 
-	* (scramble + writen_bytes++) = singmaster_layer_symbol(layer_bits);
+	* (scramble + writen_bytes++) = rca_singmaster_layer_symbol(layer_bits);
 
 	if ((move & MODIFIER_MASK) != NO_MODIFIER)
-		* (scramble + writen_bytes++) = modifier_symbol(move & MODIFIER_MASK);
+		* (scramble + writen_bytes++) = rca_modifier_symbol(move & MODIFIER_MASK);
 
 	return writen_bytes;
 }
@@ -490,17 +490,17 @@ static size_t write_singmaster_move(rca_move move, char * scramble)
  *
  * @return - the number of writen bytes
  */
-static size_t write_wca_move(rca_move move, char * scramble)
+static size_t rca_write_wca_move(rca_move move, char * scramble)
 {
 	size_t writen_bytes = 0;
 
-	* (scramble + writen_bytes++) = wca_layer_symbol(move & LAYER_MASK);
+	* (scramble + writen_bytes++) = rca_wca_layer_symbol(move & LAYER_MASK);
 
-	if ((is_wide_move(move)))
+	if ((rca_is_wide_move(move)))
 		* (scramble + writen_bytes++) = 'w';
 
 	if ((move & MODIFIER_MASK) != NO_MODIFIER)
-		* (scramble + writen_bytes++) = modifier_symbol(move & MODIFIER_MASK);
+		* (scramble + writen_bytes++) = rca_modifier_symbol(move & MODIFIER_MASK);
 
 	return writen_bytes;
 }
@@ -515,16 +515,16 @@ static size_t write_wca_move(rca_move move, char * scramble)
  *
  * @param scramble - the writen scramble
  */
-static void write_singmaster_scramble(rca_move const moves[], size_t count, char * scramble)
+static void rca_write_singmaster_scramble(rca_move const moves[], size_t count, char * scramble)
 {
 	size_t move_index;
 
-	scramble += write_singmaster_move(moves[0], scramble);
+	scramble += rca_write_singmaster_move(moves[0], scramble);
 
 	for (move_index = 1; move_index < count; move_index++)
 	{
 		* scramble++ = ' ';
-		scramble += write_singmaster_move(moves[move_index], scramble);
+		scramble += rca_write_singmaster_move(moves[move_index], scramble);
 	}
 
 	* scramble = '\0';
@@ -540,16 +540,16 @@ static void write_singmaster_scramble(rca_move const moves[], size_t count, char
  *
  * @param scramble - the writen scramble
  */
-static void write_wca_scramble(rca_move const moves[], size_t count, char * scramble)
+static void rca_write_wca_scramble(rca_move const moves[], size_t count, char * scramble)
 {
 	size_t move_index;
 
-	scramble += write_wca_move(moves[0], scramble);
+	scramble += rca_write_wca_move(moves[0], scramble);
 
 	for (move_index = 1; move_index < count; move_index++)
 	{
 		* scramble++ = ' ';
-		scramble += write_wca_move(moves[move_index], scramble);
+		scramble += rca_write_wca_move(moves[move_index], scramble);
 	}
 
 	* scramble = '\0';
@@ -566,15 +566,15 @@ static void write_wca_scramble(rca_move const moves[], size_t count, char * scra
  *
  * @return - the created scramble
  */
-static char * create_singmaster_scramble_string(rca_move const moves[], size_t count)
+static char * rca_create_singmaster_scramble_string(rca_move const moves[], size_t count)
 {
-	size_t string_length = compute_singmaster_scramble_string_length(moves, count);
+	size_t string_length = rca_compute_singmaster_scramble_string_length(moves, count);
 	char * scramble = malloc(string_length + 1);
 
 	if (scramble == NULL)
 		return NULL;
 
-	write_singmaster_scramble(moves, count, scramble);
+	rca_write_singmaster_scramble(moves, count, scramble);
 
 	return scramble;
 }
@@ -590,15 +590,15 @@ static char * create_singmaster_scramble_string(rca_move const moves[], size_t c
  *
  * @return - the created scramble
  */
-static char * create_wca_scramble_string(rca_move const moves[], size_t count)
+static char * rca_create_wca_scramble_string(rca_move const moves[], size_t count)
 {
-	size_t string_length = compute_wca_scramble_string_length(moves, count);
+	size_t string_length = rca_compute_wca_scramble_string_length(moves, count);
 	char * scramble = malloc(string_length + 1);
 
 	if (scramble == NULL)
 		return NULL;
 
-	write_wca_scramble(moves, count, scramble);
+	rca_write_wca_scramble(moves, count, scramble);
 
 	return scramble;
 }
@@ -617,14 +617,14 @@ char * rca_generate_scramble(size_t length, enum rca_option flags)
 		return NULL;
 
 	if (flags & USE_WIDE_MOVES)
-		generate_random_wide_moves(moves, length);
+		rca_generate_random_wide_moves(moves, length);
 	else
-		generate_random_base_moves(moves, length);
+		rca_generate_random_base_moves(moves, length);
 
 	if (flags & USE_WCA_NOTATION)
-		scramble = create_wca_scramble_string(moves, length);
+		scramble = rca_create_wca_scramble_string(moves, length);
 	else
-		scramble = create_singmaster_scramble_string(moves, length);
+		scramble = rca_create_singmaster_scramble_string(moves, length);
 
 	free(moves);
 
