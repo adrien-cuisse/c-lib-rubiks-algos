@@ -64,7 +64,7 @@ static char const * base_valid_moves[] =
 /**
  * Parameterized tests arguments for layers range
  */
-typedef struct ScrambleLayersRangeTestParams
+typedef struct layers_range_params
 {
 	/**
 	 * The valid symbols set matching the flags
@@ -75,7 +75,7 @@ typedef struct ScrambleLayersRangeTestParams
 	 * The layers range option
 	 */
 	enum rca_option flags;
-} ScrambleLayersRangeTestParams;
+} layers_range_params;
 
 
 
@@ -99,26 +99,26 @@ Test(scramble, returns_null_on_invalid_size)
 
 ParameterizedTestParameters(scramble, scramble_is_only_made_of_valid_symbols)
 {
-	static ScrambleLayersRangeTestParams params[4];
+	static layers_range_params params[4];
 
 	/* Base layers only, singmaster notation not relevant */
-	params[0] = (ScrambleLayersRangeTestParams) { cr_strdup(base_valid_symbols), NO_OPTIONS };
+	params[0] = (layers_range_params) { cr_strdup(base_valid_symbols), NO_OPTIONS };
 
 	/* Base layers only, WCA notation not relevant */
-	params[1] = (ScrambleLayersRangeTestParams) { cr_strdup(base_valid_symbols), USE_WCA_NOTATION };
+	params[1] = (layers_range_params) { cr_strdup(base_valid_symbols), USE_WCA_NOTATION };
 
 	/* With wide moves, Singmaster notation */
-	params[2] = (ScrambleLayersRangeTestParams) { cr_strdup(singmaster_wide_valid_symbols), USE_WIDE_MOVES };
+	params[2] = (layers_range_params) { cr_strdup(singmaster_wide_valid_symbols), USE_WIDE_MOVES };
 
 	/* With wide moves, Singmaster notation */
-	params[3] = (ScrambleLayersRangeTestParams) { cr_strdup(wca_wide_valid_symbols), USE_WIDE_MOVES | USE_WCA_NOTATION };
+	params[3] = (layers_range_params) { cr_strdup(wca_wide_valid_symbols), USE_WIDE_MOVES | USE_WCA_NOTATION };
 
-	return cr_make_param_array(ScrambleLayersRangeTestParams, params, 4);
+	return cr_make_param_array(layers_range_params, params, 4);
 }
 
 
 ParameterizedTest(
-	ScrambleLayersRangeTestParams * params,
+	layers_range_params * params,
 	scramble,
 	scramble_is_only_made_of_valid_symbols)
 {
