@@ -18,7 +18,7 @@ extern "C" {
 /**
  * The different options available
  */
-typedef enum RubiksScrambleOption
+enum rca_option
 {
 	NO_OPTIONS = 0,
 
@@ -39,7 +39,7 @@ typedef enum RubiksScrambleOption
 	 * Has no effect when USE_WIDE_MOVES is not set
 	 */
 	USE_WCA_NOTATION = 2
-} RubiksScrambleOption;
+};
 
 
 
@@ -53,9 +53,9 @@ typedef enum RubiksScrambleOption
  *
  * @return char * - the generated sequence, or NULL if any allocation failed
  */
-IMPORTANT_RETURN char * rubiks_generate_scramble(
+IMPORTANT_RETURN char * rca_generate_scramble(
 	size_t length,
-	RubiksScrambleOption flags);
+	enum rca_option flags);
 
 
 
