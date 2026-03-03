@@ -232,7 +232,7 @@ Test(scramble, doesnt_contain_consecutive_moves_on_same_axis)
 /**
  * Parameterized tests arguments for scrambles
  */
-typedef struct ScrambleTestParams
+typedef struct scramble_test_error_params
 {
 	/**
 	 * The scramble to test
@@ -243,7 +243,7 @@ typedef struct ScrambleTestParams
 	 * The fragment to include in the error message on failure
 	 */
 	char * error_message_fragment;
-} ScrambleTestParams;
+} scramble_test_error_params;
 
 
 
@@ -257,7 +257,7 @@ typedef struct ScrambleTestParams
  */
 static void free_scramble_tests_params(struct criterion_test_params * crp)
 {
-	ScrambleTestParams * params = crp->params;
+	scramble_test_error_params * params = crp->params;
 
 	for (size_t index = 0; index < crp->length; index++)
 	{
@@ -269,39 +269,39 @@ static void free_scramble_tests_params(struct criterion_test_params * crp)
 
 ParameterizedTestParameters(scramble, check_finds_layers_repetition)
 {
-	static ScrambleTestParams params[19];
+	static scramble_test_error_params params[19];
 
 	/* only simple repetitions */
-	params[0] = (ScrambleTestParams) { cr_strdup("U U"), cr_strdup("U U") };
-	params[1] = (ScrambleTestParams) { cr_strdup("F F R"), cr_strdup("F F") };
-	params[2] = (ScrambleTestParams) { cr_strdup("L D D"), cr_strdup("D D") };
-	params[3] = (ScrambleTestParams) { cr_strdup("F U U L"), cr_strdup("U U") };
+	params[0] = (scramble_test_error_params) { cr_strdup("U U"), cr_strdup("U U") };
+	params[1] = (scramble_test_error_params) { cr_strdup("F F R"), cr_strdup("F F") };
+	params[2] = (scramble_test_error_params) { cr_strdup("L D D"), cr_strdup("D D") };
+	params[3] = (scramble_test_error_params) { cr_strdup("F U U L"), cr_strdup("U U") };
 
 	/* with quotes */
-	params[4] = (ScrambleTestParams) { cr_strdup("U' U'"), cr_strdup("U' U'") };
-	params[5] = (ScrambleTestParams) { cr_strdup("F' F' R"), cr_strdup("F' F'") };
-	params[6] = (ScrambleTestParams) { cr_strdup("L D' D'"), cr_strdup("D' D'") };
-	params[7] = (ScrambleTestParams) { cr_strdup("F U' U' L"), cr_strdup("U' U'") };
+	params[4] = (scramble_test_error_params) { cr_strdup("U' U'"), cr_strdup("U' U'") };
+	params[5] = (scramble_test_error_params) { cr_strdup("F' F' R"), cr_strdup("F' F'") };
+	params[6] = (scramble_test_error_params) { cr_strdup("L D' D'"), cr_strdup("D' D'") };
+	params[7] = (scramble_test_error_params) { cr_strdup("F U' U' L"), cr_strdup("U' U'") };
 
 	/* withs 2's */
-	params[8] = (ScrambleTestParams) { cr_strdup("U2 U2"), cr_strdup("U2 U2") };
-	params[9] = (ScrambleTestParams) { cr_strdup("F2 F2 R"), cr_strdup("F2 F2") };
-	params[10] = (ScrambleTestParams) { cr_strdup("L D2 D2"), cr_strdup("D2 D2") };
-	params[11] = (ScrambleTestParams) { cr_strdup("F U2 U2 L"), cr_strdup("U2 U2") };
+	params[8] = (scramble_test_error_params) { cr_strdup("U2 U2"), cr_strdup("U2 U2") };
+	params[9] = (scramble_test_error_params) { cr_strdup("F2 F2 R"), cr_strdup("F2 F2") };
+	params[10] = (scramble_test_error_params) { cr_strdup("L D2 D2"), cr_strdup("D2 D2") };
+	params[11] = (scramble_test_error_params) { cr_strdup("F U2 U2 L"), cr_strdup("U2 U2") };
 
 	/* combinations of simple and modifiers */
-	params[12] = (ScrambleTestParams) { cr_strdup("U U'"), cr_strdup("U U'") };
-	params[13] = (ScrambleTestParams) { cr_strdup("R R2"), cr_strdup("R R2") };
-	params[14] = (ScrambleTestParams) { cr_strdup("B' B"), cr_strdup("B' B") };
-	params[15] = (ScrambleTestParams) { cr_strdup("D' D2"), cr_strdup("D' D2") };
-	params[16] = (ScrambleTestParams) { cr_strdup("L2 L"), cr_strdup("L2 L") };
-	params[17] = (ScrambleTestParams) { cr_strdup("F2 F'"), cr_strdup("F2 F'") };
-	params[18] = (ScrambleTestParams) { cr_strdup("L' L B2"), cr_strdup("L' L") };
-	params[18] = (ScrambleTestParams) { cr_strdup("D' R R'"), cr_strdup("R R'") };
-	params[18] = (ScrambleTestParams) { cr_strdup("D' F2 F B"), cr_strdup("F2 F") };
+	params[12] = (scramble_test_error_params) { cr_strdup("U U'"), cr_strdup("U U'") };
+	params[13] = (scramble_test_error_params) { cr_strdup("R R2"), cr_strdup("R R2") };
+	params[14] = (scramble_test_error_params) { cr_strdup("B' B"), cr_strdup("B' B") };
+	params[15] = (scramble_test_error_params) { cr_strdup("D' D2"), cr_strdup("D' D2") };
+	params[16] = (scramble_test_error_params) { cr_strdup("L2 L"), cr_strdup("L2 L") };
+	params[17] = (scramble_test_error_params) { cr_strdup("F2 F'"), cr_strdup("F2 F'") };
+	params[18] = (scramble_test_error_params) { cr_strdup("L' L B2"), cr_strdup("L' L") };
+	params[18] = (scramble_test_error_params) { cr_strdup("D' R R'"), cr_strdup("R R'") };
+	params[18] = (scramble_test_error_params) { cr_strdup("D' F2 F B"), cr_strdup("F2 F") };
 
 	return cr_make_param_array(
-		ScrambleTestParams,
+		scramble_test_error_params,
 		params,
 		19,
 		free_scramble_tests_params);
@@ -309,7 +309,7 @@ ParameterizedTestParameters(scramble, check_finds_layers_repetition)
 
 
 ParameterizedTest(
-	ScrambleTestParams * params,
+	scramble_test_error_params * params,
 	scramble,
 	check_finds_layers_repetition)
 {
@@ -329,47 +329,47 @@ ParameterizedTest(
 
 ParameterizedTestParameters(scramble, check_finds_invalid_move)
 {
-	static ScrambleTestParams params[23];
+	static scramble_test_error_params params[23];
 
 	/* complete junk */
-	params[0] = (ScrambleTestParams) { cr_strdup("not even a scramble"), cr_strdup("not") };
+	params[0] = (scramble_test_error_params) { cr_strdup("not even a scramble"), cr_strdup("not") };
 
 	/* invalid symbol */
-	params[1] = (ScrambleTestParams) { cr_strdup("a B L"), cr_strdup("a") };
-	params[2] = (ScrambleTestParams) { cr_strdup("B' c L2"), cr_strdup("c") };
-	params[3] = (ScrambleTestParams) { cr_strdup("L R g"), cr_strdup("g") };
+	params[1] = (scramble_test_error_params) { cr_strdup("a B L"), cr_strdup("a") };
+	params[2] = (scramble_test_error_params) { cr_strdup("B' c L2"), cr_strdup("c") };
+	params[3] = (scramble_test_error_params) { cr_strdup("L R g"), cr_strdup("g") };
 
 	/* repeated move */
-	params[4] = (ScrambleTestParams) { cr_strdup("LL R U2"), cr_strdup("LL") };
-	params[5] = (ScrambleTestParams) { cr_strdup("L' B'B' R"), cr_strdup("B'B'") };
-	params[6] = (ScrambleTestParams) { cr_strdup("L' R2 F2F2"), cr_strdup("F2F2") };
+	params[4] = (scramble_test_error_params) { cr_strdup("LL R U2"), cr_strdup("LL") };
+	params[5] = (scramble_test_error_params) { cr_strdup("L' B'B' R"), cr_strdup("B'B'") };
+	params[6] = (scramble_test_error_params) { cr_strdup("L' R2 F2F2"), cr_strdup("F2F2") };
 
 	/* not properly delimited */
-	params[7] = (ScrambleTestParams) { cr_strdup("BD' U' R'"), cr_strdup("BD'") };
-	params[8] = (ScrambleTestParams) { cr_strdup("L' FD' F'"), cr_strdup("FD'") };
-	params[9] = (ScrambleTestParams) { cr_strdup("U' F' D'L2"), cr_strdup("D'L2") };
+	params[7] = (scramble_test_error_params) { cr_strdup("BD' U' R'"), cr_strdup("BD'") };
+	params[8] = (scramble_test_error_params) { cr_strdup("L' FD' F'"), cr_strdup("FD'") };
+	params[9] = (scramble_test_error_params) { cr_strdup("U' F' D'L2"), cr_strdup("D'L2") };
 
 	/* standalone modifiers */
-	params[10] = (ScrambleTestParams) { cr_strdup("' L F2"), cr_strdup("'") };
-	params[11] = (ScrambleTestParams) { cr_strdup("2 D' L'"), cr_strdup("2") };
-	params[12] = (ScrambleTestParams) { cr_strdup("U ' R"), cr_strdup("'") };
-	params[13] = (ScrambleTestParams) { cr_strdup("R' 2 U"), cr_strdup("2") };
-	params[14] = (ScrambleTestParams) { cr_strdup("F L' '"), cr_strdup("'") };
-	params[15] = (ScrambleTestParams) { cr_strdup("B2 U2 2"), cr_strdup("2") };
+	params[10] = (scramble_test_error_params) { cr_strdup("' L F2"), cr_strdup("'") };
+	params[11] = (scramble_test_error_params) { cr_strdup("2 D' L'"), cr_strdup("2") };
+	params[12] = (scramble_test_error_params) { cr_strdup("U ' R"), cr_strdup("'") };
+	params[13] = (scramble_test_error_params) { cr_strdup("R' 2 U"), cr_strdup("2") };
+	params[14] = (scramble_test_error_params) { cr_strdup("F L' '"), cr_strdup("'") };
+	params[15] = (scramble_test_error_params) { cr_strdup("B2 U2 2"), cr_strdup("2") };
 
 	/* several modifiers */
-	params[16] = (ScrambleTestParams) { cr_strdup("D'2 L2 F'"), cr_strdup("D'2") };
-	params[17] = (ScrambleTestParams) { cr_strdup("F2 D2' U"), cr_strdup("D2'") };
-	params[18] = (ScrambleTestParams) { cr_strdup("R' D R22"), cr_strdup("R22") };
-	params[19] = (ScrambleTestParams) { cr_strdup("R' D R''"), cr_strdup("R''") };
+	params[16] = (scramble_test_error_params) { cr_strdup("D'2 L2 F'"), cr_strdup("D'2") };
+	params[17] = (scramble_test_error_params) { cr_strdup("F2 D2' U"), cr_strdup("D2'") };
+	params[18] = (scramble_test_error_params) { cr_strdup("R' D R22"), cr_strdup("R22") };
+	params[19] = (scramble_test_error_params) { cr_strdup("R' D R''"), cr_strdup("R''") };
 
 	/* prefixed modifiers */
-	params[20] = (ScrambleTestParams) { cr_strdup("'R D' F"), cr_strdup("'R") };
-	params[21] = (ScrambleTestParams) { cr_strdup("U' ''L R'"), cr_strdup("''L") };
-	params[22] = (ScrambleTestParams) { cr_strdup("L2 U 2'B"), cr_strdup("2'B") };
+	params[20] = (scramble_test_error_params) { cr_strdup("'R D' F"), cr_strdup("'R") };
+	params[21] = (scramble_test_error_params) { cr_strdup("U' ''L R'"), cr_strdup("''L") };
+	params[22] = (scramble_test_error_params) { cr_strdup("L2 U 2'B"), cr_strdup("2'B") };
 
 	return cr_make_param_array(
-		ScrambleTestParams,
+		scramble_test_error_params,
 		params,
 		23,
 		free_scramble_tests_params);
@@ -377,7 +377,7 @@ ParameterizedTestParameters(scramble, check_finds_invalid_move)
 
 
 ParameterizedTest(
-	ScrambleTestParams * params,
+	scramble_test_error_params * params,
 	scramble,
 	check_finds_invalid_move)
 {
@@ -399,39 +399,39 @@ ParameterizedTest(
 
 ParameterizedTestParameters(scramble, check_finds_repeated_axis)
 {
-	static ScrambleTestParams params[19];
+	static scramble_test_error_params params[19];
 
 	/* only repeated axis, no modifiers */
-	params[0] = (ScrambleTestParams) { cr_strdup("L M"), cr_strdup("L M") };
-	params[1] = (ScrambleTestParams) { cr_strdup("M R"), cr_strdup("M R") };
-	params[2] = (ScrambleTestParams) { cr_strdup("L R"), cr_strdup("L R") };
-	params[3] = (ScrambleTestParams) { cr_strdup("U E"), cr_strdup("U E") };
-	params[4] = (ScrambleTestParams) { cr_strdup("E D"), cr_strdup("E D") };
-	params[5] = (ScrambleTestParams) { cr_strdup("U D"), cr_strdup("U D") };
-	params[6] = (ScrambleTestParams) { cr_strdup("F S"), cr_strdup("F S") };
-	params[7] = (ScrambleTestParams) { cr_strdup("S B"), cr_strdup("S B") };
-	params[8] = (ScrambleTestParams) { cr_strdup("F B"), cr_strdup("F B") };
+	params[0] = (scramble_test_error_params) { cr_strdup("L M"), cr_strdup("L M") };
+	params[1] = (scramble_test_error_params) { cr_strdup("M R"), cr_strdup("M R") };
+	params[2] = (scramble_test_error_params) { cr_strdup("L R"), cr_strdup("L R") };
+	params[3] = (scramble_test_error_params) { cr_strdup("U E"), cr_strdup("U E") };
+	params[4] = (scramble_test_error_params) { cr_strdup("E D"), cr_strdup("E D") };
+	params[5] = (scramble_test_error_params) { cr_strdup("U D"), cr_strdup("U D") };
+	params[6] = (scramble_test_error_params) { cr_strdup("F S"), cr_strdup("F S") };
+	params[7] = (scramble_test_error_params) { cr_strdup("S B"), cr_strdup("S B") };
+	params[8] = (scramble_test_error_params) { cr_strdup("F B"), cr_strdup("F B") };
 
 	/* only repeated axis, with modifiers */
-	params[9] = (ScrambleTestParams) { cr_strdup("L' R'"), cr_strdup("L' R'") };
-	params[10] = (ScrambleTestParams) { cr_strdup("U2 D2"), cr_strdup("U2 D2") };
-	params[11] = (ScrambleTestParams) { cr_strdup("F' B2"), cr_strdup("F' B2") };
-	params[12] = (ScrambleTestParams) { cr_strdup("L2 M'"), cr_strdup("L2 M'") };
+	params[9] = (scramble_test_error_params) { cr_strdup("L' R'"), cr_strdup("L' R'") };
+	params[10] = (scramble_test_error_params) { cr_strdup("U2 D2"), cr_strdup("U2 D2") };
+	params[11] = (scramble_test_error_params) { cr_strdup("F' B2"), cr_strdup("F' B2") };
+	params[12] = (scramble_test_error_params) { cr_strdup("L2 M'"), cr_strdup("L2 M'") };
 
 	/* repeating axis is at the beginning */
-	params[13] = (ScrambleTestParams) { cr_strdup("D U M B"), cr_strdup("D U") };
-	params[14] = (ScrambleTestParams) { cr_strdup("D' E2 F2 E R'"), cr_strdup("D' E2") };
+	params[13] = (scramble_test_error_params) { cr_strdup("D U M B"), cr_strdup("D U") };
+	params[14] = (scramble_test_error_params) { cr_strdup("D' E2 F2 E R'"), cr_strdup("D' E2") };
 
 	/* repeating axis is at the end */
-	params[15] = (ScrambleTestParams) { cr_strdup("R E D"), cr_strdup("E D") };
-	params[16] = (ScrambleTestParams) { cr_strdup("R' E2 D"), cr_strdup("E2 D") };
+	params[15] = (scramble_test_error_params) { cr_strdup("R E D"), cr_strdup("E D") };
+	params[16] = (scramble_test_error_params) { cr_strdup("R' E2 D"), cr_strdup("E2 D") };
 
 	/* repeating axis is in the middle */
-	params[17] = (ScrambleTestParams) { cr_strdup("M E D S"), cr_strdup("E D") };
-	params[18] = (ScrambleTestParams) { cr_strdup("M U2 R' D' E2 R2"), cr_strdup("D' E2") };
+	params[17] = (scramble_test_error_params) { cr_strdup("M E D S"), cr_strdup("E D") };
+	params[18] = (scramble_test_error_params) { cr_strdup("M U2 R' D' E2 R2"), cr_strdup("D' E2") };
 
 	return cr_make_param_array(
-		ScrambleTestParams,
+		scramble_test_error_params,
 		params,
 		19,
 		free_scramble_tests_params);
@@ -439,7 +439,7 @@ ParameterizedTestParameters(scramble, check_finds_repeated_axis)
 
 
 ParameterizedTest(
-	ScrambleTestParams * params,
+	scramble_test_error_params * params,
 	scramble,
 	check_finds_repeated_axis)
 {
