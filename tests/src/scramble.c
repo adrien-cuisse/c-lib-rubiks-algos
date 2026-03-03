@@ -74,7 +74,7 @@ typedef struct layers_range_params
 	/**
 	 * The layers range option
 	 */
-	enum rca_option flags;
+	enum rba_option flags;
 } layers_range_params;
 
 
@@ -90,7 +90,7 @@ Test(scramble, returns_null_on_invalid_size)
 	size_t invalid_size = 0;
 
 	// when
-	char * scramble = rca_generate_scramble(invalid_size, NO_OPTIONS);
+	char * scramble = rba_generate_scramble(invalid_size, NO_OPTIONS);
 
 	// then
 	cr_assert_null(scramble, "scramble of length 0 makes no sense");
@@ -126,7 +126,7 @@ ParameterizedTest(
 	size_t size = BIG_SIZE;
 
 	// given
-	char const * scramble = rca_generate_scramble(size, params->flags);
+	char const * scramble = rba_generate_scramble(size, params->flags);
 
 	// then
 	size_t valid_length = strspn(scramble, params->valid_moves);
@@ -154,7 +154,7 @@ ParameterizedTest(size_t * size, scramble, moves_are_space_separated)
 	size_t expected_spaces_count = * size - 1;
 
 	// when: generating the scramble and checking separations
-	char * scramble = rca_generate_scramble(* size, NO_OPTIONS);
+	char * scramble = rba_generate_scramble(* size, NO_OPTIONS);
 	size_t actual_spaces_count = count_occurrences(scramble, ' ');
 
 	// then: it should be 1 between each move
@@ -173,7 +173,7 @@ Test(scramble, doesnt_contain_consecutive_moves_on_same_layer)
 	size_t big_size = BIG_SIZE;
 
 	// when
-	char * scramble = rca_generate_scramble(big_size, NO_OPTIONS);
+	char * scramble = rba_generate_scramble(big_size, NO_OPTIONS);
 	char const * repetition = find_repeated_layers(scramble);
 
 	// then
@@ -191,7 +191,7 @@ Test(scramble, scramble_is_only_made_of_valid_moves)
 	size_t big_size = BIG_SIZE;
 
 	// when
-	char * scramble = rca_generate_scramble(big_size, NO_OPTIONS);
+	char * scramble = rba_generate_scramble(big_size, NO_OPTIONS);
 	char * first_invalid_move = find_invalid_move(
 		scramble,
 		base_valid_moves);
@@ -211,7 +211,7 @@ Test(scramble, doesnt_contain_consecutive_moves_on_same_axis)
 	size_t scramble_size = BIG_SIZE;
 
 	// when
-	char * scramble = rca_generate_scramble(scramble_size, NO_OPTIONS);
+	char * scramble = rba_generate_scramble(scramble_size, NO_OPTIONS);
 
 	// then
 	char const * first_repeating_axis = find_repeated_axis(scramble);

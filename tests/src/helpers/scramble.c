@@ -15,10 +15,10 @@
  * The axes the cube's layers can rotate around
  * Values don't matter, we just need to group layers by axis
  */
-typedef enum rca_axis
+typedef enum rba_axis
 {
 	AXIS_1, AXIS_2, AXIS_3
-} rca_axis;
+} rba_axis;
 
 
 
@@ -88,7 +88,7 @@ char const * find_repeated_layers(char const * scramble)
  *
  * @return - the axis of the [move], or -1 if unknown move
  */
-static rca_axis get_move_axis(char move)
+static rba_axis get_move_axis(char move)
 {
 	if ((move == 'L') || (move == 'M') || (move == 'R'))
 		return AXIS_1;
@@ -106,9 +106,9 @@ static rca_axis get_move_axis(char move)
 char const * find_repeated_axis(char const * scramble)
 {
 	char const * current_move = scramble;
-	rca_axis current_axis = get_move_axis(* current_move);
+	rba_axis current_axis = get_move_axis(* current_move);
 	char const * next_move;
-	rca_axis next_axis;
+	rba_axis next_axis;
 
 	while ((next_move = get_next_move(current_move)) != NULL)
 	{

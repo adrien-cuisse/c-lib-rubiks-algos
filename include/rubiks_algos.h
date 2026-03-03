@@ -18,7 +18,7 @@ extern "C" {
 /**
  * The different options available
  */
-enum rca_option
+enum rba_option
 {
 	NO_OPTIONS = 0,
 
@@ -53,9 +53,9 @@ enum rca_option
  *
  * @return char * - the generated sequence, or NULL if any allocation failed
  */
-IMPORTANT_RETURN char * rca_generate_scramble(
+IMPORTANT_RETURN char * rba_generate_scramble(
 	size_t length,
-	enum rca_option flags);
+	enum rba_option flags);
 
 
 
