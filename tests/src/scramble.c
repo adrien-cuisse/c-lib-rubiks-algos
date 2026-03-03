@@ -386,7 +386,7 @@ ParameterizedTest(
 	// when: trying to find them
 	char const * invalid_move = find_invalid_move(
 		params->scramble,
-		valid_moves);
+		base_valid_moves);
 
 	// then they should be found
 	cr_assert_not_null(
