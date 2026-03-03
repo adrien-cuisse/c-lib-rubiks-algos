@@ -167,10 +167,10 @@ ParameterizedTestParameters(scramble, scramble_is_only_made_of_valid_symbols)
 {
 	static layers_symbols_params params[2];
 
-	/* Base layers only, singmaster notation not relevant */
+	/* Base layers only */
 	params[0] = (layers_symbols_params) { cr_strdup(valid_base_symbols), NO_OPTIONS };
 
-	/* With wide moves, Singmaster notation */
+	/* With wide moves */
 	params[1] = (layers_symbols_params) { cr_strdup(valid_extended_symbols), USE_WIDE_MOVES };
 
 	return cr_make_param_array(layers_symbols_params, params, 2, free_layers_symbols_params);
@@ -325,7 +325,6 @@ typedef struct scramble_test_error_params
 /**
  * Called by Criterion, if specified in cr_make_param_array()
  * Deallocates strings which were allocated for a parameterized test
- * The array itself is NOT deallocated
  *
  * @param crp - provided by Criterion
  */
