@@ -28,7 +28,7 @@
 /**
  * Every symbol that may appear in a scramble sequence with no options
  */
-static char const * base_valid_symbols = "LRUDFB EMS '2";
+static char const * valid_base_symbols = "LRUDFB EMS '2";
 
 
 /**
@@ -95,7 +95,7 @@ ParameterizedTestParameters(scramble, scramble_is_only_made_of_valid_symbols)
 	static layers_range_params params[2];
 
 	/* Base layers only, singmaster notation not relevant */
-	params[0] = (layers_range_params) { cr_strdup(base_valid_symbols), NO_OPTIONS };
+	params[0] = (layers_range_params) { cr_strdup(valid_base_symbols), NO_OPTIONS };
 
 	/* With wide moves, Singmaster notation */
 	params[1] = (layers_range_params) { cr_strdup(valid_extended_symbols), USE_WIDE_MOVES };
