@@ -89,22 +89,13 @@ typedef unsigned int rba_move;
 /**
  * Available layers when no options enabled
  */
-static enum rba_layer base_layers[] =
+static enum rba_layer layers[] =
 {
 	LEFT_LAYER, MIDDLE_LAYER, RIGHT_LAYER,
 	TOP_LAYER, EQUATOR_LAYER, BOTTOM_LAYER,
 	FRONT_LAYER, STANDING_LAYER, BACK_LAYER,
-};
 
-
-/**
- * Available layers when USE_WIDE_MOVES enabled
- */
-static enum rba_layer wide_layers[] =
-{
-	LEFT_LAYER, MIDDLE_LAYER, RIGHT_LAYER,
-	TOP_LAYER, EQUATOR_LAYER, BOTTOM_LAYER,
-	FRONT_LAYER, STANDING_LAYER, BACK_LAYER,
+	/* When USE_WIDE_MOVES is set */
 	LEFT_LAYERS, RIGHT_LAYERS,
 	TOP_LAYERS, BOTTOM_LAYERS,
 	FRONT_LAYERS, BACK_LAYERS,
@@ -120,7 +111,7 @@ static enum rba_layer wide_layers[] =
  */
 static enum rba_layer rba_random_base_layer(void)
 {
-	return base_layers[rand() % 9];
+	return layers[rand() % 9];
 }
 
 
@@ -131,7 +122,7 @@ static enum rba_layer rba_random_base_layer(void)
  */
 static enum rba_layer rba_random_extended_layer(void)
 {
-	return wide_layers[rand() % 15];
+	return layers[rand() % 15];
 }
 
 
