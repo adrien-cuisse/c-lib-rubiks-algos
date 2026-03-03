@@ -114,37 +114,6 @@ static enum rba_layer wide_layers[] =
 
 
 /**
- * Counts the number of bits set to 1 in [number]
- *
- * @param number - the number to count bits from
- *
- * @return - the number of bits set
- */
-static size_t rba_count_bits_set(unsigned long number)
-{
-	size_t count;
-
-	for (count = 0; number > 0; count++)
-		number = number & (number - 1);
-
-	return count;
-}
-
-
-/**
- * Checks whether or not the given move is made of several layers
- *
- * @param move - the move to check
- *
- * @return - 1 if the move contains at least 2 layers, 0 otherwise
- */
-static int rba_is_wide_move(rba_move move)
-{
-	return rba_count_bits_set(move & LAYER_MASK) > 2;
-}
-
-
-/**
  * Picks a random base layer, wide moves are excluded
  *
  * @return - a random base layer
@@ -307,7 +276,7 @@ static void rba_generate_random_wide_moves(rba_move moves[], size_t count)
  *
  * @return - the number of bytes requires to write the given move
  */
-static size_t rba_singmaster_notation_move_length(rba_move move)
+static size_t rba_move_length(rba_move move)
 {
 	size_t length = 1; /* 1 character for the layer */
 
@@ -329,41 +298,13 @@ static size_t rba_singmaster_notation_move_length(rba_move move)
  *
  * @return - the required length of the string, without NULL-terminating byte
  */
-static size_t rba_compute_singmaster_scramble_string_length(rba_move const moves[], size_t count)
+static size_t rba_compute_scramble_string_length(rba_move const moves[], size_t count)
 {
 	size_t string_length = 0;
 	size_t index;
 
 	for (index = 0; index < count; index++)
-		string_length += rba_singmaster_notation_move_length(moves[index]);
-
-	return string_length + count - 1;
-}
-
-
-/**
- * Computes the length of the string required to store the scramble using
- * WCA notation
- *
- * @param moves - the moves composing the scramble
- *
- * @param count - the number of moves in the scramble
- *
- * @return - the required length of the string, without NULL-terminating byte
- */
-static size_t rba_compute_wca_scramble_string_length(rba_move const moves[], size_t count)
-{
-	size_t string_length = 0;
-	size_t index;
-
-	for (index = 0; index < count; index++)
-	{
-		string_length += rba_singmaster_notation_move_length(moves[index]);
-
-		/* 1 character for the 'w' if wide move */
-		if (rba_is_wide_move(moves[index]))
-			string_length++;
-	}
+		string_length += rba_move_length(moves[index]);
 
 	return string_length + count - 1;
 }
@@ -401,7 +342,7 @@ static char rba_base_layer_symbol(enum rba_layer layer)
  *
  * @return - the symbol of the layer
  */
-static char rba_singmaster_layer_symbol(enum rba_layer layer)
+static char rba_extended_layer_symbol(enum rba_layer layer)
 {
 	switch (layer)
 	{
@@ -411,28 +352,6 @@ static char rba_singmaster_layer_symbol(enum rba_layer layer)
 		case BOTTOM_LAYERS: return 'd';
 		case FRONT_LAYERS: return 'f';
 		case BACK_LAYERS: return 'b';
-		default: return rba_base_layer_symbol(layer);
-	}
-}
-
-
-/**
- * Matches the wide layer to a symbol in WCA notation
- *
- * @param layer - the layer to get the symbol for
- *
- * @return - the symbol of the layer
- */
-static char rba_wca_layer_symbol(enum rba_layer layer)
-{
-	switch (layer)
-	{
-		case LEFT_LAYERS: return 'L';
-		case RIGHT_LAYERS: return 'R';
-		case TOP_LAYERS: return 'U';
-		case BOTTOM_LAYERS: return 'D';
-		case FRONT_LAYERS: return 'F';
-		case BACK_LAYERS: return 'B';
 		default: return rba_base_layer_symbol(layer);
 	}
 }
@@ -467,37 +386,12 @@ static char rba_modifier_symbol(enum rba_modifier modifier)
  *
  * @return - the number of writen bytes
  */
-static size_t rba_write_singmaster_move(rba_move move, char * scramble)
+static size_t rba_write_move(rba_move move, char * scramble)
 {
 	size_t writen_bytes = 0;
 	enum rba_layer layer_bits = move & LAYER_MASK;
 
-	* (scramble + writen_bytes++) = rba_singmaster_layer_symbol(layer_bits);
-
-	if ((move & MODIFIER_MASK) != NO_MODIFIER)
-		* (scramble + writen_bytes++) = rba_modifier_symbol(move & MODIFIER_MASK);
-
-	return writen_bytes;
-}
-
-
-/**
- * Writes a move at the beginning of the scramble string, using WCA notation
- *
- * @param move - the move to write
- *
- * @param scramble - the scramble string to write to
- *
- * @return - the number of writen bytes
- */
-static size_t rba_write_wca_move(rba_move move, char * scramble)
-{
-	size_t writen_bytes = 0;
-
-	* (scramble + writen_bytes++) = rba_wca_layer_symbol(move & LAYER_MASK);
-
-	if ((rba_is_wide_move(move)))
-		* (scramble + writen_bytes++) = 'w';
+	* (scramble + writen_bytes++) = rba_extended_layer_symbol(layer_bits);
 
 	if ((move & MODIFIER_MASK) != NO_MODIFIER)
 		* (scramble + writen_bytes++) = rba_modifier_symbol(move & MODIFIER_MASK);
@@ -515,41 +409,16 @@ static size_t rba_write_wca_move(rba_move move, char * scramble)
  *
  * @param scramble - the writen scramble
  */
-static void rba_write_singmaster_scramble(rba_move const moves[], size_t count, char * scramble)
+static void rba_write_scramble(rba_move const moves[], size_t count, char * scramble)
 {
 	size_t move_index;
 
-	scramble += rba_write_singmaster_move(moves[0], scramble);
+	scramble += rba_write_move(moves[0], scramble);
 
 	for (move_index = 1; move_index < count; move_index++)
 	{
 		* scramble++ = ' ';
-		scramble += rba_write_singmaster_move(moves[move_index], scramble);
-	}
-
-	* scramble = '\0';
-}
-
-
-/**
- * Writes the scramble in the given string, using WCA notation
- *
- * @param moves - the moves composing the scramble
- *
- * @param count - the number of moves in the scramble
- *
- * @param scramble - the writen scramble
- */
-static void rba_write_wca_scramble(rba_move const moves[], size_t count, char * scramble)
-{
-	size_t move_index;
-
-	scramble += rba_write_wca_move(moves[0], scramble);
-
-	for (move_index = 1; move_index < count; move_index++)
-	{
-		* scramble++ = ' ';
-		scramble += rba_write_wca_move(moves[move_index], scramble);
+		scramble += rba_write_move(moves[move_index], scramble);
 	}
 
 	* scramble = '\0';
@@ -566,39 +435,15 @@ static void rba_write_wca_scramble(rba_move const moves[], size_t count, char * 
  *
  * @return - the created scramble
  */
-static char * rba_create_singmaster_scramble_string(rba_move const moves[], size_t count)
+static char * rba_create_scramble_string(rba_move const moves[], size_t count)
 {
-	size_t string_length = rba_compute_singmaster_scramble_string_length(moves, count);
+	size_t string_length = rba_compute_scramble_string_length(moves, count);
 	char * scramble = malloc(string_length + 1);
 
 	if (scramble == NULL)
 		return NULL;
 
-	rba_write_singmaster_scramble(moves, count, scramble);
-
-	return scramble;
-}
-
-
-/**
- * Creates a scramble string from the given moves, using WCA notation
- * The caller is in charge of the memory
- *
- * @param moves - the moves composing the scramble
- *
- * @param count - the number of moves in the scramble
- *
- * @return - the created scramble
- */
-static char * rba_create_wca_scramble_string(rba_move const moves[], size_t count)
-{
-	size_t string_length = rba_compute_wca_scramble_string_length(moves, count);
-	char * scramble = malloc(string_length + 1);
-
-	if (scramble == NULL)
-		return NULL;
-
-	rba_write_wca_scramble(moves, count, scramble);
+	rba_write_scramble(moves, count, scramble);
 
 	return scramble;
 }
@@ -621,10 +466,7 @@ char * rba_generate_scramble(size_t length, enum rba_option flags)
 	else
 		rba_generate_random_base_moves(moves, length);
 
-	if (flags & USE_WCA_NOTATION)
-		scramble = rba_create_wca_scramble_string(moves, length);
-	else
-		scramble = rba_create_singmaster_scramble_string(moves, length);
+	scramble = rba_create_scramble_string(moves, length);
 
 	free(moves);
 

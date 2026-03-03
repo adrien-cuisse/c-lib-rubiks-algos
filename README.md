@@ -57,7 +57,7 @@ int main(void)
 	/* init the random seed */
 	srand(time(NULL));
 
-	scramble = rubiks_generate_scramble(16, USE_WIDE_MOVES | USE_WCA_NOTATION);
+	scramble = rubiks_generate_scramble(16, USE_WIDE_MOVES);
 	if (scramble == NULL)
 		return EXIT_FAILURE;
 

@@ -35,20 +35,13 @@ static char const * base_valid_symbols = "LRUDFB EMS '2";
  * Every symbol that may appear in a scramble sequence with USE_WIDE_MOVES
  * option enabled, with default Singmaster notation
  */
-static char const * singmaster_wide_valid_symbols = "LRUDFB lrudfb EMS '2";
-
-
-/**
- * Every symbol that may appear in a scramble sequence with USE_WIDE_MOVES
- * and USE_WCA_NOTATION options enabled
- */
-static char const * wca_wide_valid_symbols = "LRUDFB w EMS '2";
+static char const * valid_extended_symbols = "LRUDFB lrudfb EMS '2";
 
 
 /**
  * All possible moves for a scramble
  */
-static char const * base_valid_moves[] =
+static char const * valid_moves[] =
 {
 	"L",  "R",  "U",  "D",  "F",  "B",  "E",  "M",  "S",
 	"L'", "R'", "U'", "D'", "F'", "B'", "E'", "M'", "S'",
@@ -99,21 +92,15 @@ Test(scramble, returns_null_on_invalid_size)
 
 ParameterizedTestParameters(scramble, scramble_is_only_made_of_valid_symbols)
 {
-	static layers_range_params params[4];
+	static layers_range_params params[2];
 
 	/* Base layers only, singmaster notation not relevant */
 	params[0] = (layers_range_params) { cr_strdup(base_valid_symbols), NO_OPTIONS };
 
-	/* Base layers only, WCA notation not relevant */
-	params[1] = (layers_range_params) { cr_strdup(base_valid_symbols), USE_WCA_NOTATION };
-
 	/* With wide moves, Singmaster notation */
-	params[2] = (layers_range_params) { cr_strdup(singmaster_wide_valid_symbols), USE_WIDE_MOVES };
+	params[1] = (layers_range_params) { cr_strdup(valid_extended_symbols), USE_WIDE_MOVES };
 
-	/* With wide moves, Singmaster notation */
-	params[3] = (layers_range_params) { cr_strdup(wca_wide_valid_symbols), USE_WIDE_MOVES | USE_WCA_NOTATION };
-
-	return cr_make_param_array(layers_range_params, params, 4);
+	return cr_make_param_array(layers_range_params, params, 2);
 }
 
 
@@ -194,7 +181,7 @@ Test(scramble, scramble_is_only_made_of_valid_moves)
 	char * scramble = rba_generate_scramble(big_size, NO_OPTIONS);
 	char * first_invalid_move = find_invalid_move(
 		scramble,
-		base_valid_moves);
+		valid_moves);
 
 	// then
 	cr_assert_null(
@@ -386,7 +373,7 @@ ParameterizedTest(
 	// when: trying to find them
 	char const * invalid_move = find_invalid_move(
 		params->scramble,
-		base_valid_moves);
+		valid_moves);
 
 	// then they should be found
 	cr_assert_not_null(
