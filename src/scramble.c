@@ -68,10 +68,13 @@ enum rba_layer
 
 	/* If USE_WIDE_MOVES option is enabled */
 	LEFT_LAYERS = LEFT_LAYER | MIDDLE_LAYER,
+	BUT_MIDDLE_LAYER = LEFT_LAYER | RIGHT_LAYER,
 	RIGHT_LAYERS = RIGHT_LAYER | MIDDLE_LAYER,
 	TOP_LAYERS = TOP_LAYER | EQUATOR_LAYER,
+	BUT_EQUATOR_LAYER = TOP_LAYER | BOTTOM_LAYER,
 	BOTTOM_LAYERS = BOTTOM_LAYER | EQUATOR_LAYER,
 	FRONT_LAYERS = FRONT_LAYER | STANDING_LAYER,
+	BUT_STANDING_LAYER = FRONT_LAYER | BACK_LAYER,
 	BACK_LAYERS = BACK_LAYER | STANDING_LAYER,
 
 	LAYER_MASK = 0x3FE0 | AXIS_MASK
@@ -338,10 +341,13 @@ static char rba_extended_layer_symbol(enum rba_layer layer)
 	switch (layer)
 	{
 		case LEFT_LAYERS: return 'l';
+		case BUT_MIDDLE_LAYER: return 'm';
 		case RIGHT_LAYERS: return 'r';
 		case TOP_LAYERS: return 'u';
+		case BUT_EQUATOR_LAYER: return 'e';
 		case BOTTOM_LAYERS: return 'd';
 		case FRONT_LAYERS: return 'f';
+		case BUT_STANDING_LAYER: return 's';
 		case BACK_LAYERS: return 'b';
 		default: return rba_base_layer_symbol(layer);
 	}

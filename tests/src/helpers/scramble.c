@@ -133,7 +133,7 @@ char const * find_repeated_axis(char const * scramble)
  *
  * @return int - 1 if the string is stored in the array, 0 otherwise
  */
-static int string_in_array(char const ** haystack, char * needle)
+static int string_in_array(char const * const * haystack, char * needle)
 {
 	for (int index = 0; haystack[index] != NULL; index++)
 	{
@@ -145,7 +145,7 @@ static int string_in_array(char const ** haystack, char * needle)
 }
 
 
-char * find_invalid_move(char * scramble, char const ** valid_moves)
+char * find_invalid_move(char * scramble, char const * const * valid_moves)
 {
 	char * token = strtok(scramble, " ");
 
@@ -174,6 +174,26 @@ char * cr_strdup(char const * string)
 	char * copy = cr_malloc(strlen(string) + 1);
 	if (copy != NULL)
 		strcpy(copy, string);
+
+	return copy;
+}
+
+
+char ** cr_strsdup(char const * const * strings)
+{
+	size_t length = 0;
+	char ** copy;
+
+	while (strings[length++] != NULL)
+		;
+
+	copy = cr_malloc(length * sizeof(* copy));
+	if (copy == NULL)
+		return NULL;
+
+	for (length = 0; strings[length] != NULL; length++)
+		copy[length] = cr_strdup(strings[length]);
+	copy[length] = NULL;
 
 	return copy;
 }

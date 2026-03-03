@@ -58,7 +58,7 @@ char const * find_repeated_axis(char const * scramble);
  *
  * @return char * - the first invalid move, as a single token
  */
-char * find_invalid_move(char * scramble, char const ** valid_moves);
+char * find_invalid_move(char * scramble, char const * const * valid_moves);
 
 
 /**
@@ -70,6 +70,18 @@ char * find_invalid_move(char * scramble, char const ** valid_moves);
  * @return - the copy of the string
  */
 char * cr_strdup(char const * string);
+
+
+/**
+ * Duplicates an array of strings to be used in a parameterized test
+ * Array must be NULL-terminated
+ * Memory from libc malloc() is unavailable in sub-processes because of ASLR
+ *
+ * @param strings - the strings to duplicate
+ *
+ * @return - the copy of the strings array
+ */
+char ** cr_strsdup(char const * const * strings);
 
 
 

@@ -35,13 +35,13 @@ static char const * valid_base_symbols = "LRUDFB EMS '2";
  * Every symbol that may appear in a scramble sequence with USE_WIDE_MOVES
  * option enabled, with default Singmaster notation
  */
-static char const * valid_extended_symbols = "LRUDFB lrudfb EMS '2";
+static char const * valid_extended_symbols = "LRUDFB lrudfb EMS ems '2";
 
 
 /**
- * All possible moves for a scramble
+ * All possible moves for a scramble, without wide moves
  */
-static char const * valid_moves[] =
+static char const * valid_base_moves[] =
 {
 	"L",  "R",  "U",  "D",  "F",  "B",  "E",  "M",  "S",
 	"L'", "R'", "U'", "D'", "F'", "B'", "E'", "M'", "S'",
@@ -52,12 +52,30 @@ static char const * valid_moves[] =
 };
 
 
+/**
+ * All possible moves for a scramble, with wide moves
+ */
+static char const * valid_extended_moves[] =
+{
+	"L",  "R",  "U",  "D",  "F",  "B",  "E",  "M",  "S",
+	"L'", "R'", "U'", "D'", "F'", "B'", "E'", "M'", "S'",
+	"L2", "R2", "U2", "D2", "F2", "B2", "E2", "M2", "S2",
+
+	"l",  "r",  "u",  "d",  "f",  "b",  "e",  "m",  "s",
+	"l'", "r'", "u'", "d'", "f'", "b'", "e'", "m'", "s'",
+	"l2", "r2", "u2", "d2", "f2", "b2", "e2", "m2", "s2",
+
+	/* sentinel */
+	NULL
+};
+
+
 
 
 /**
- * Parameterized tests arguments for layers range
+ * Parameterized tests arguments for symbols check
  */
-typedef struct layers_range_params
+typedef struct layers_symbols_params
 {
 	/**
 	 * The valid symbols set matching the flags
@@ -68,7 +86,44 @@ typedef struct layers_range_params
 	 * The layers range option
 	 */
 	enum rba_option flags;
-} layers_range_params;
+} layers_symbols_params;
+
+
+/**
+ * Parameterized tests arguments for moves check
+ */
+typedef struct layers_moves_params
+{
+	/**
+	 * The valid moves set matching the flags
+	 */
+	char ** valid_moves;
+
+	/**
+	 * The layers range option
+	 */
+	enum rba_option flags;
+} layers_moves_params;
+
+
+/**
+ * Called by Criterion, if specified in cr_make_param_array()
+ * Deallocates strings which were allocated for a parameterized test
+ *
+ * @param crp - provided by Criterion
+ */
+static void free_layers_moves_params(struct criterion_test_params * crp)
+{
+	for (size_t i = 0; i < crp->length; i++)
+	{
+		layers_moves_params params = ((layers_moves_params *) crp->params)[i];
+
+		for (int j = 0; params.valid_moves[j] != NULL; j++)
+			cr_free(params.valid_moves[j]);
+
+		cr_free(params.valid_moves);
+	}
+}
 
 
 
@@ -92,20 +147,20 @@ Test(scramble, returns_null_on_invalid_size)
 
 ParameterizedTestParameters(scramble, scramble_is_only_made_of_valid_symbols)
 {
-	static layers_range_params params[2];
+	static layers_symbols_params params[2];
 
 	/* Base layers only, singmaster notation not relevant */
-	params[0] = (layers_range_params) { cr_strdup(valid_base_symbols), NO_OPTIONS };
+	params[0] = (layers_symbols_params) { cr_strdup(valid_base_symbols), NO_OPTIONS };
 
 	/* With wide moves, Singmaster notation */
-	params[1] = (layers_range_params) { cr_strdup(valid_extended_symbols), USE_WIDE_MOVES };
+	params[1] = (layers_symbols_params) { cr_strdup(valid_extended_symbols), USE_WIDE_MOVES };
 
-	return cr_make_param_array(layers_range_params, params, 2);
+	return cr_make_param_array(layers_symbols_params, params, 2);
 }
 
 
 ParameterizedTest(
-	layers_range_params * params,
+	layers_symbols_params * params,
 	scramble,
 	scramble_is_only_made_of_valid_symbols)
 {
@@ -172,16 +227,30 @@ Test(scramble, doesnt_contain_consecutive_moves_on_same_layer)
 }
 
 
-Test(scramble, scramble_is_only_made_of_valid_moves)
+ParameterizedTestParameters(scramble, scramble_is_only_made_of_valid_moves)
+{
+	static layers_moves_params params[2];
+
+	/* Base layers only */
+	params[0] = (layers_moves_params) { cr_strsdup(valid_base_moves), NO_OPTIONS };
+
+	/* With wide moves */
+	params[1] = (layers_moves_params) { cr_strsdup(valid_extended_moves), USE_WIDE_MOVES };
+
+	return cr_make_param_array(layers_moves_params, params, 2, free_layers_moves_params);
+}
+
+
+ParameterizedTest(layers_moves_params * params, scramble, scramble_is_only_made_of_valid_moves)
 {
 	// given
-	size_t big_size = BIG_SIZE;
+	size_t size = BIG_SIZE;
 
 	// when
-	char * scramble = rba_generate_scramble(big_size, NO_OPTIONS);
+	char * scramble = rba_generate_scramble(size, params->flags);
 	char * first_invalid_move = find_invalid_move(
 		scramble,
-		valid_moves);
+		(char const * const *) params->valid_moves);
 
 	// then
 	cr_assert_null(
@@ -373,7 +442,7 @@ ParameterizedTest(
 	// when: trying to find them
 	char const * invalid_move = find_invalid_move(
 		params->scramble,
-		valid_moves);
+		valid_base_moves);
 
 	// then they should be found
 	cr_assert_not_null(
