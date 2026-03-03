@@ -80,7 +80,7 @@ typedef struct layers_symbols_params
 	/**
 	 * The valid symbols set matching the flags
 	 */
-	char const * valid_moves;
+	char * valid_moves;
 
 	/**
 	 * The layers range option
@@ -104,6 +104,22 @@ typedef struct layers_moves_params
 	 */
 	enum rba_option flags;
 } layers_moves_params;
+
+
+/**
+ * Called by Criterion, if specified in cr_make_param_array()
+ * Deallocates strings which were allocated for a parameterized test
+ *
+ * @param crp - provided by Criterion
+ */
+static void free_layers_symbols_params(struct criterion_test_params * crp)
+{
+	for (size_t i = 0; i < crp->length; i++)
+	{
+		layers_symbols_params params = ((layers_symbols_params *) crp->params)[i];
+		cr_free(params.valid_moves);
+	}
+}
 
 
 /**
@@ -155,7 +171,7 @@ ParameterizedTestParameters(scramble, scramble_is_only_made_of_valid_symbols)
 	/* With wide moves, Singmaster notation */
 	params[1] = (layers_symbols_params) { cr_strdup(valid_extended_symbols), USE_WIDE_MOVES };
 
-	return cr_make_param_array(layers_symbols_params, params, 2);
+	return cr_make_param_array(layers_symbols_params, params, 2, free_layers_symbols_params);
 }
 
 
